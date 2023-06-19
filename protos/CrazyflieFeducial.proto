@@ -5,32 +5,6 @@ PROTO CrazyflieFeducial
     field MFString img "feducial.jpg"
 ]
 {
-    # Solid {
-    #     rotation 0 1 0 0
-    #     scale 1 1 1 
-    #     translation 0 0 0.1 
-    #     children [
-    #         shape {
-    #             appearance PBRAppearance {
-    #                 baseColor 0.1 0.1 0.1
-    #                 baseColorMap ImageTexture {
-    #                     url [
-    #                         "feducial.png"
-    #                     ] 
-    #                 }
-    #                 metalness 0
-    #             }
-    #             geometry Rectangle {
-    #                 size        0.1 0.1
-    #                 doubleSided TRUE
-    #             }
-    #         }
-    #     ]
-    #     boundingObject Rectangle {
-    #         size        0.1 0.1
-    #         doubleSided TRUE
-    #     }
-    # }
     Solid {
         translation 0 0 0.03
         children [
