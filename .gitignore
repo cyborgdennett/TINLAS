@@ -1,7 +1,0 @@
-build/
-install/
-log/
-.vscode/
-
-# Ignore unwanted world files
-worlds/.*
