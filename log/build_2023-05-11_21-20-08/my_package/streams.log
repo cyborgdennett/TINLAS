@@ -1,0 +1,24 @@
+[0.520s] Invoking command in '/home/casper/ros2/my_package': PYTHONPATH=/home/casper/ros2/my_package/build/my_package/prefix_override:/home/casper/ros2/my_package/install/my_package/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base build/my_package build --build-base /home/casper/ros2/my_package/build/my_package/build install --record /home/casper/ros2/my_package/build/my_package/install.log --single-version-externally-managed
+[0.724s] running egg_info
+[0.725s] writing build/my_package/my_package.egg-info/PKG-INFO
+[0.725s] writing dependency_links to build/my_package/my_package.egg-info/dependency_links.txt
+[0.725s] writing entry points to build/my_package/my_package.egg-info/entry_points.txt
+[0.726s] writing requirements to build/my_package/my_package.egg-info/requires.txt
+[0.726s] writing top-level names to build/my_package/my_package.egg-info/top_level.txt
+[0.728s] reading manifest file 'build/my_package/my_package.egg-info/SOURCES.txt'
+[0.730s] writing manifest file 'build/my_package/my_package.egg-info/SOURCES.txt'
+[0.730s] running build
+[0.730s] running build_py
+[0.731s] running install
+[0.731s] /usr/lib/python3/dist-packages/setuptools/command/install.py:34: SetuptoolsDeprecationWarning: setup.py install is deprecated. Use build and pip and other standards-based tools.
+[0.731s]   warnings.warn(
+[0.731s] running install_lib
+[0.732s] running install_data
+[0.733s] running install_egg_info
+[0.735s] removing '/home/casper/ros2/my_package/install/my_package/lib/python3.10/site-packages/my_package-0.0.0-py3.10.egg-info' (and everything under it)
+[0.735s] Copying build/my_package/my_package.egg-info to /home/casper/ros2/my_package/install/my_package/lib/python3.10/site-packages/my_package-0.0.0-py3.10.egg-info
+[0.735s] running install_scripts
+[0.755s] Installing my_robot_driver script to /home/casper/ros2/my_package/install/my_package/lib/my_package
+[0.755s] Installing obstacle_avoider script to /home/casper/ros2/my_package/install/my_package/lib/my_package
+[0.755s] writing list of installed files to '/home/casper/ros2/my_package/build/my_package/install.log'
+[0.780s] Invoked command in '/home/casper/ros2/my_package' returned '0': PYTHONPATH=/home/casper/ros2/my_package/build/my_package/prefix_override:/home/casper/ros2/my_package/install/my_package/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base build/my_package build --build-base /home/casper/ros2/my_package/build/my_package/build install --record /home/casper/ros2/my_package/build/my_package/install.log --single-version-externally-managed

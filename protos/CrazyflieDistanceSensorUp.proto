@@ -1,0 +1,13 @@
+#VRML_SIM R2023a utf8
+
+PROTO CrazyflieDistanceSensorUp []
+{
+    DistanceSensor {
+        rotation 0 0 0 -1.5708
+        name "range_up"
+        lookupTable [
+            0 0 0
+            2 2000 0
+        ]
+    }
+}

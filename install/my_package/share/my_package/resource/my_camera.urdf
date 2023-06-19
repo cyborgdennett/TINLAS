@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<robot name="My Camera">
+    <webots>
+        <device reference="camera" type="Camera">
+            <ros>
+                <topicName>/camera/top_view</topicName>
+                <scanRate>10</scanRate>
+                <alwaysOn>true</alwaysOn>
+            </ros>
+        </device> 
+    </webots>
+</robot>
