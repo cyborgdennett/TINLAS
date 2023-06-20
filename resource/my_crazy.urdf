@@ -31,7 +31,7 @@
                 <alwaysOn>true</alwaysOn>
             </ros>
         </device>
-        <device reference="intertial_unit" type="InertialUnit">
+        <device reference="intertial unit" type="InertialUnit">
             <ros>
                 <topicName>/imu</topicName>
                 <alwaysOn>true</alwaysOn>

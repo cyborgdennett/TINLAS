@@ -21,7 +21,8 @@ def generate_launch_description():
         package='webots_ros2_driver',
         executable='driver',
         output='screen',
-        additional_env={'WEBOTS_CONTROLLER_URL': controller_url_prefix() + 'my_crazy'},
+        additional_env=
+            {'WEBOTS_CONTROLLER_URL': controller_url_prefix() + 'my_crazy'},
         parameters=[
             {'robot_description': robot_description},
         ]
@@ -38,15 +39,30 @@ def generate_launch_description():
         package='my_package',
         executable='obstacle_avoider',
     )
+    
+    rviz = Node(
+        package='rviz2',
+        namespace='',
+        executable='rviz2',
+        name='rviz2',
+        arguments=['-d', [os.path.join(package_dir, 'config', 'video.rviz')]]
+    )
 
     return LaunchDescription([
         webots,
         my_crazy_driver,
         my_camera_driver,
-        obstacle_avoider,
+        # obstacle_avoider,
+        rviz,
         launch.actions.RegisterEventHandler(
             event_handler=launch.event_handlers.OnProcessExit(
                 target_action=webots,
+                on_exit=[launch.actions.EmitEvent(event=launch.events.Shutdown())],
+            )
+        ),
+        launch.actions.RegisterEventHandler(
+            event_handler=launch.event_handlers.OnProcessExit(
+                target_action=rviz,
                 on_exit=[launch.actions.EmitEvent(event=launch.events.Shutdown())],
             )
         )

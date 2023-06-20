@@ -7,9 +7,15 @@ data_files.append(('share/' + package_name + '/launch', ['launch/robot_launch.py
 data_files.append(('share/' + package_name + '/launch', ['launch/crazy_launch.py']))
 data_files.append(('share/' + package_name + '/worlds', ['worlds/my_world.wbt']))
 data_files.append(('share/' + package_name + '/worlds', ['worlds/crazyflie_world.wbt']))
+data_files.append(('share/' + package_name + '/protos', ['protos/feducial.jpg']))
+data_files.append(('share/' + package_name + '/protos', ['protos/CrazyflieDistanceSensorDown.proto']))
+data_files.append(('share/' + package_name + '/protos', ['protos/CrazyflieDistanceSensorUp.proto']))
+data_files.append(('share/' + package_name + '/protos', ['protos/CrazyflieFeducial.proto']))
 data_files.append(('share/' + package_name + '/resource', ['resource/my_robot.urdf']))
 data_files.append(('share/' + package_name + '/resource', ['resource/my_crazy.urdf']))
 data_files.append(('share/' + package_name + '/resource', ['resource/my_camera.urdf']))
+data_files.append(('share/' + package_name + '/config', ['config/video.rviz']))
+# data_files.append(('share/' + package_name + '/my_package', ['my_package/pid_controller.py']))
 data_files.append(('share/' + package_name, ['package.xml']))
 
 setup(
@@ -29,6 +35,7 @@ setup(
             'my_robot_driver = my_package.my_robot_driver:main',
             'my_crazy_driver = my_package.my_crazy_driver:main',
             'obstacle_avoider = my_package.obstacle_avoider:main',  
+            # 'pid_controller = my_package.pid_controller:pid_velocity_fixed_height_controller',  
         ],
     },
 )

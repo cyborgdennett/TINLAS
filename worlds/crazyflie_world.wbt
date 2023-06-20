@@ -7,6 +7,7 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/project
 EXTERNPROTO "../protos/CrazyflieDistanceSensorDown.proto"
 EXTERNPROTO "../protos/CrazyflieDistanceSensorUp.proto"
 EXTERNPROTO "../protos/CrazyflieFeducial.proto"
+# EXTERNPROTO "../protos/Crazyflie.proto"
 
 WorldInfo {
 }
