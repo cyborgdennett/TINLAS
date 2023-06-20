@@ -1,7 +1,10 @@
 import os
 import pathlib
 import launch
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions.path_join_substitution import PathJoinSubstitution
 from launch import LaunchDescription
 from ament_index_python.packages import get_package_share_directory
 from webots_ros2_driver.webots_launcher import WebotsLauncher, Ros2SupervisorLauncher
@@ -13,9 +16,13 @@ def generate_launch_description():
     robot_description = pathlib.Path(os.path.join(package_dir, 'resource', 'my_crazy.urdf')).read_text()
     camera_description = pathlib.Path(os.path.join(package_dir, 'resource', 'my_camera.urdf')).read_text()
 
+    world = LaunchConfiguration('world')
+    
     webots = WebotsLauncher(
-        world=os.path.join(package_dir, 'worlds', 'crazyflie_world.wbt')
+        # world=os.path.join(package_dir, 'worlds', 'crazyflie_world.wbt')
+        world=PathJoinSubstitution([package_dir, 'worlds', world])
     )
+    
 
     my_crazy_driver = Node(
         package='webots_ros2_driver',
@@ -49,6 +56,11 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        DeclareLaunchArgument(
+            'world',
+            default_value='crazyflie_world.wbt',
+            description='Choose one of the world files from `/my_package/worlds` directory'
+        ),
         webots,
         my_crazy_driver,
         my_camera_driver,

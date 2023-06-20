@@ -31,24 +31,24 @@
                 <alwaysOn>true</alwaysOn>
             </ros>
         </device>
-        <device reference="intertial unit" type="InertialUnit">
+        <!-- <device reference="intertial unit" type="InertialUnit">
             <ros>
                 <topicName>/imu</topicName>
                 <alwaysOn>true</alwaysOn>
             </ros>
-        </device>
+        </device> -->
         <device reference="gps" type="GPS">
             <ros>
                 <topicName>/gps</topicName>
                 <alwaysOn>true</alwaysOn>
             </ros>
         </device>
-        <device reference="gyro" type="Gyro">
+        <!-- <device reference="gyro" type="Gyro">
             <ros>
                 <topicName>/gyro</topicName>
                 <alwaysOn>true</alwaysOn>
             </ros>
-        </device>
+        </device> -->
         <plugin type="my_package.my_crazy_driver.MyCrazyDriver" />
     </webots>
 </robot>
