@@ -2,6 +2,7 @@ import rclpy
 from geometry_msgs.msg import Twist, PointStamped
 from sensor_msgs.msg import Range
 
+
 from math import cos, sin
 
 from .pid_controller import pid_velocity_fixed_height_controller
@@ -78,7 +79,7 @@ class MyCrazyDriver:
         self.height_desired = FLYING_ATTITUDE
         
         # get movement commands
-        self.__node.create_subscription(Twist, 'cmd_vel', self.__cmd_vel_callback, 1)
+        # self.__node.create_subscription(Twist, 'cmd_vel', self.__cmd_vel_callback, 1)
         # read sensor data
         self.__range_right_data = Range()
         self.__range_back_data = Range()
@@ -92,8 +93,24 @@ class MyCrazyDriver:
         self.__gps_data = PointStamped()
         self.__node.create_subscription(PointStamped, 'gps', self.__gps_callback, 1)
         
+        # set these to change the movement of the drone
+        self.forward_desired = 0.5 #TEST set to 0 when not testing
+        self.sideways_desired = 0
+        self.yaw_desired = 0
+        self.height_diff_desired = 0
+        self.__node.create_subscription(Twist, 'target_pose', self.__target_pose_callback, 1)
+        
         self.__node.get_logger().info("finished init")  
         
+    
+    # MSG type is Twist    
+    
+    def __target_pose_callback(self, target_pose):
+        # TODO: make sure the maximum speed is not exceeded
+        self.forward_desired = target_pose.linear.x
+        self.sideways_desired = target_pose.linear.y
+        self.height_diff_desired = target_pose.linear.z
+        self.yaw_desired    = target_pose.angular.y
         
     # MSG type is Range    
     
@@ -110,9 +127,6 @@ class MyCrazyDriver:
         
     def __gps_callback(self, gps_data):
         self.__gps_data = gps_data
-        
-    def __cmd_vel_callback(self, twist):
-        self.__target_twist = twist
         
     def __target_position_callback(self, target_position):
         return
@@ -145,18 +159,18 @@ class MyCrazyDriver:
 
         ## Initialize values
         # desired_state = [0, 0, 0, 0]
-        forward_desired = 0.5 # test forward
+        # self.forward_desired = 0.5 # test forward
         # forward_desired = 0
-        sideways_desired = 0
-        yaw_desired = 0
-        height_diff_desired = 0
+        # sideways_desired = 0
+        # yaw_desired = 0
+        # height_diff_desired = 0
         
-        self.height_desired += height_diff_desired * dt
+        self.height_desired += self.height_diff_desired * dt
         
         # update PID controller
         
-        [m1,m2,m3,m4] = self.PID_CF.pid(dt, forward_desired, sideways_desired,
-                                yaw_desired, self.height_desired,
+        [m1,m2,m3,m4] = self.PID_CF.pid(dt, self.forward_desired, self.sideways_desired,
+                                self.yaw_desired, self.height_desired,
                                 roll, pitch, yaw_rate,
                                 altitude, v_x, v_y)
         

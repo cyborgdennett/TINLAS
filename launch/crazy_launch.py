@@ -54,6 +54,12 @@ def generate_launch_description():
         name='rviz2',
         arguments=['-d', [os.path.join(package_dir, 'config', 'video.rviz')]]
     )
+    
+    tf_pub = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        arguments = ['--x', '0', '--y', '0', '--z', '1', '--yaw', '0', '--pitch', '0', '--roll', '0', '--frame-id', 'map', '--child-frame-id', '/gps']
+    )
 
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -65,6 +71,7 @@ def generate_launch_description():
         my_crazy_driver,
         my_camera_driver,
         # obstacle_avoider,
+        tf_pub,
         rviz,
         launch.actions.RegisterEventHandler(
             event_handler=launch.event_handlers.OnProcessExit(

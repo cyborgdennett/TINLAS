@@ -1,0 +1,9 @@
+version: 0.0.0
+pkg_name: my_package
+
+no_of_nodes: 1
+action: circle
+
+random_placement: false
+
+
