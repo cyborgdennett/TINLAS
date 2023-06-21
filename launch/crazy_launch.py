@@ -23,6 +23,11 @@ def generate_launch_description():
         world=PathJoinSubstitution([package_dir, 'worlds', world])
     )
     
+    feducial_follower = Node(
+        package='my_package',
+        executable='feducial_follower',
+    )
+    
 
     my_crazy_driver = Node(
         package='webots_ros2_driver',
@@ -71,6 +76,7 @@ def generate_launch_description():
         my_crazy_driver,
         my_camera_driver,
         # obstacle_avoider,
+        feducial_follower,
         tf_pub,
         rviz,
         launch.actions.RegisterEventHandler(

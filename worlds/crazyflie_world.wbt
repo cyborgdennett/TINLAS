@@ -61,7 +61,8 @@ Robot {
     }
     Camera {
       name "camera"
-      translation 0.03 0 0.01
+      translation 0.01 0 0.01
+      rotation 0 1 0 1.5708
       fieldOfView 0.87
       width 324
       height 324

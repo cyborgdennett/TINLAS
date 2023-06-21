@@ -30,16 +30,17 @@ class MyCrazyDriver:
         # self.__back_distance_sensor.enable(self.__robot.getBasicTimeStep())
         # self.__front_distance_sensor.enable(self.__robot.getBasicTimeStep())    
         counter = 0
+        timestep = int(self.__robot.getBasicTimeStep())
         # IMU : does not exist as ROS msg
         self.__imu = self.__robot.getDevice('inertial unit')
         
         
-        self.__imu.enable(int(self.__robot.getBasicTimeStep()))
+        self.__imu.enable(timestep)
         
         
         # Gyro : does not exist as ROS msg
         self.__gyro = self.__robot.getDevice('gyro')
-        self.__gyro.enable(int(self.__robot.getBasicTimeStep()))
+        self.__gyro.enable(timestep)
         
                 
         # gps : exists as ROS msg

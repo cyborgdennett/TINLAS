@@ -35,6 +35,7 @@ setup(
             'my_robot_driver = my_package.my_robot_driver:main',
             'my_crazy_driver = my_package.my_crazy_driver:main',
             'obstacle_avoider = my_package.obstacle_avoider:main',  
+            'feducial_follower = my_package.feducial_follower:main',  
             # 'pid_controller = my_package.pid_controller:pid_velocity_fixed_height_controller',  
         ],
     },
