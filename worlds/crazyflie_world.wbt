@@ -64,8 +64,8 @@ Robot {
       translation 0.01 0 0.01
       rotation 0 1 0 1.5708
       fieldOfView 0.87
-      width 324
-      height 324
+      width 1000
+      height 1000
     }
   ]
   name "my_camera"
