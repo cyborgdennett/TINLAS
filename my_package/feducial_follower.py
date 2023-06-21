@@ -47,18 +47,15 @@ class FeducialFollower(Node):
 
     def __camera_top_view_info_callback(self, message):
         self.__camera_top_view_info_value = message
+        
+        
     def __camera_top_view_callback(self, message):
         self.__camera_top_view_value = message
         
         # Convert ROS Image message to OpenCV image
-        current_frame = self.br.imgmsg_to_cv2(message)
-        
-        current_frame = imutils.resize(current_frame, width=1000)
-        
-        # Display image
-        # cv2.imshow("camera", current_frame)
-        # cv2.waitKey(1)
-        
+
+        current_frame = self.br.imgmsg_to_cv2(message, 'bgr8')
+
         
         ### KLAAS CODE ###
         
