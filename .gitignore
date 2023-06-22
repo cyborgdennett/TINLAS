@@ -4,4 +4,4 @@ log/
 .vscode/
 
 # Ignore unwanted world files
-worlds/.*
+/worlds/.*
