@@ -9,13 +9,23 @@ data_files.append(("share/" + package_name + "/launch", ["launch/robot_launch.py
 data_files.append(("share/" + package_name + "/launch", ["launch/crazy_launch.py"]))
 data_files.append(("share/" + package_name + "/worlds", ["worlds/my_world.wbt"]))
 data_files.append(("share/" + package_name + "/worlds", ["worlds/crazyflie_world.wbt"]))
-data_files.append(("share/" + package_name + "/meshes", ["protos/meshes/cw_prop.dae"]))
+data_files.append(("share/" + package_name + "/protos", ["protos/meshes/cw_prop.dae"]))
 data_files.append(
-    ("share/" + package_name + "/meshes", ["protos/meshes/cf2_assembly.dae"])
+    (
+        "share/" + package_name + "/meshes",
+        ["protos/meshes/cf2_assembly.dae", "protos/meshes/ccw_prop.dae"],
+    )
 )
-data_files.append(("share/" + package_name + "/meshes", ["protos/meshes/cow_prop.dae"]))
-data_files.append(("share/" + package_name + "/icons", ["protos/icons/Crazyflie.png"]))
-data_files.append(("share/" + package_name + "/protos", ["protos/feducial.jpg"]))
+# data_files.append(("share/" + package_name + "/meshes", ["protos/meshes/ccw_prop.dae"]))
+data_files.append(("share/" + package_name + "/protos", ["protos/icons/Crazyflie.png"]))
+data_files.append(
+    (
+        "share/" + package_name + "/protos",
+        [
+            "protos/feducial.jpg",
+        ],
+    )
+)
 data_files.append(
     ("share/" + package_name + "/protos", ["protos/CrazyflieDistanceSensorDown.proto"])
 )

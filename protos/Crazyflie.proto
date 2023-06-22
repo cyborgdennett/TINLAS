@@ -8,8 +8,7 @@ PROTO Crazyflie [
   field SFVec3f    translation     0 0 0.015   # Is `Transform.translation`.
   field SFRotation rotation        0 0 1 0     # Is `Transform.rotation`.
   field SFString   name            "Crazyflie" # Is `Solid.name`.
-  field SFString   controller      "crazyflie_controller_c" # Is `Robot.controller`.
-#  field SFString   controller      "crazyflie" # Is `Robot.controller`.
+  field SFString   controller      "crazyflie" # Is `Robot.controller`.
   field MFString   controllerArgs  []          # Is `Robot.controllerArgs`.
   field SFString   window          "<generic>" # Is `Robot.window`.
   field SFString   customData      ""          # Is `Robot.customData`.
@@ -35,11 +34,11 @@ PROTO Crazyflie [
         translation 0 0 -0.015
         children [
           Group {
-            children IS extensionSlot
+          children IS extensionSlot
           }
           CadShape {
             url [
-                "../../meshes/collada_files/cf2_assembly.dae"
+              "meshes/cf2_assembly.dae"
             ]
           }
         ]
@@ -91,38 +90,16 @@ PROTO Crazyflie [
       Gyro {
       }
       InertialUnit {
-        name "inertial_unit"
       }
       DEF M1 Propeller {
         shaftAxis 0 0 1
         centerOfThrust 0.031 -0.031 0.008
         thrustConstants -4e-05 0
         torqueConstants 2.4e-06 0
-        fastHelixThreshold 50
         device RotationalMotor {
           name "m1_motor"
           maxVelocity 600
           maxTorque 30
-        }
-        fastHelix Solid {
-          translation 0.031 -0.031 0.008
-          children [
-            DEF FASTHELIX Shape {
-              appearance PBRAppearance {
-                baseColor 0.1 0.1 0.1
-                baseColorMap ImageTexture {
-                  url [
-                    "../../meshes/textures/fast_helix.png"
-                  ]
-                }
-                metalness 0
-              }
-              geometry Cylinder {
-                height 0.001
-                radius 0.025
-              }
-            }
-          ]
         }
         slowHelix Solid {
           translation 0.031 -0.031 0.008
@@ -134,7 +111,7 @@ PROTO Crazyflie [
               }
               geometry Mesh {
                 url [
-                    "../../meshes/collada_files/ccw_prop.dae"
+                  "../meshes/ccw_prop.dae"
                 ]
               }
             }
@@ -146,17 +123,10 @@ PROTO Crazyflie [
         centerOfThrust -0.031 -0.031 0.008
         thrustConstants 4e-05 0
         torqueConstants 2.4e-06 0
-        fastHelixThreshold 50
         device RotationalMotor {
           name "m2_motor"
           maxVelocity 600
           maxTorque 30
-        }
-        fastHelix Solid {
-          translation -0.031 -0.031 0.008
-          children [
-            USE FASTHELIX
-          ]
         }
         slowHelix Solid {
           translation -0.031 -0.031 0.008
@@ -170,17 +140,10 @@ PROTO Crazyflie [
         centerOfThrust -0.031 0.031 0.008
         thrustConstants -4e-05 0
         torqueConstants 2.4e-06 0
-        fastHelixThreshold 50
         device RotationalMotor {
           name "m3_motor"
           maxVelocity 600
           maxTorque 30
-        }
-        fastHelix Solid {
-          translation -0.031 0.031 0.008
-          children [
-            USE FASTHELIX
-          ]
         }
         slowHelix Solid {
           translation -0.031 0.031 0.008
@@ -194,17 +157,10 @@ PROTO Crazyflie [
         centerOfThrust 0.031 0.031 0.008
         thrustConstants 4e-05 0
         torqueConstants 2.4e-06 0
-        fastHelixThreshold 50
         device RotationalMotor {
           name "m4_motor"
           maxVelocity 600
           maxTorque 30
-        }
-        fastHelix Solid {
-          translation 0.031 0.031 0.008
-          children [
-            USE FASTHELIX
-          ]
         }
         slowHelix DEF PROP Solid {
           translation 0.031 0.031 0.007
