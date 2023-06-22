@@ -7,6 +7,7 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/project
 EXTERNPROTO "../protos/CrazyflieDistanceSensorDown.proto"
 EXTERNPROTO "../protos/CrazyflieDistanceSensorUp.proto"
 EXTERNPROTO "../protos/CrazyflieFeducial.proto"
+EXTERNPROTO "../protos/CrazyflieNoPhysics.proto"
 # EXTERNPROTO "../protos/Crazyflie.proto"
 
 WorldInfo {
@@ -19,6 +20,12 @@ Viewpoint {
 TexturedBackground {
 }
 TexturedBackgroundLight {
+}
+Crazyflie {
+  translation 0.25 0.25 0.01
+}
+CrazyflieNoPhysics {
+  translation -0.25 -0.25 0.01
 }
 Crazyflie {
   hidden linearVelocity_0 6.272835020872584e-08 -2.584029260135209e-08 2.0960877684962337e-08

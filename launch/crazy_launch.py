@@ -66,6 +66,13 @@ def generate_launch_description():
         arguments = ['--x', '0', '--y', '0', '--z', '1', '--yaw', '0', '--pitch', '0', '--roll', '0', '--frame-id', 'map', '--child-frame-id', '/gps']
     )
 
+    swarm_pathing = Node(
+        package='my_package',
+        executable='swarm_pathing',
+        # ros_arguments=
+        # arguments=['-d', [os.path.join(package_dir, 'config', 'video.rviz')]]
+    )
+        
     return LaunchDescription([
         DeclareLaunchArgument(
             'world',
@@ -75,6 +82,7 @@ def generate_launch_description():
         webots,
         my_crazy_driver,
         my_camera_driver,
+        swarm_pathing,
         # obstacle_avoider,
         feducial_follower,
         tf_pub,
