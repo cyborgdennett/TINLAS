@@ -9,40 +9,31 @@ data_files.append(("share/" + package_name + "/launch", ["launch/robot_launch.py
 data_files.append(("share/" + package_name + "/launch", ["launch/crazy_launch.py"]))
 data_files.append(("share/" + package_name + "/worlds", ["worlds/my_world.wbt"]))
 data_files.append(("share/" + package_name + "/worlds", ["worlds/crazyflie_world.wbt"]))
-data_files.append(("share/" + package_name + "/protos", ["protos/meshes/cw_prop.dae"]))
 data_files.append(
     (
-        "share/" + package_name + "/meshes",
+        "share/" + package_name + "/protos/meshes",
         ["protos/meshes/cf2_assembly.dae", "protos/meshes/ccw_prop.dae"],
     )
 )
-# data_files.append(("share/" + package_name + "/meshes", ["protos/meshes/ccw_prop.dae"]))
-data_files.append(("share/" + package_name + "/protos", ["protos/icons/Crazyflie.png"]))
+data_files.append(
+    ("share/" + package_name + "/protos/icons", ["protos/icons/Crazyflie.png"])
+)
 data_files.append(
     (
         "share/" + package_name + "/protos",
         [
             "protos/feducial.jpg",
+            "protos/CrazyflieDistanceSensorDown.proto",
+            "protos/CrazyflieDistanceSensorUp.proto",
+            "protos/CrazyflieFeducial.proto",
+            "protos/CrazyflieNoPhysics.proto",
         ],
     )
-)
-data_files.append(
-    ("share/" + package_name + "/protos", ["protos/CrazyflieDistanceSensorDown.proto"])
-)
-data_files.append(
-    ("share/" + package_name + "/protos", ["protos/CrazyflieDistanceSensorUp.proto"])
-)
-data_files.append(
-    ("share/" + package_name + "/protos", ["protos/CrazyflieFeducial.proto"])
-)
-data_files.append(
-    ("share/" + package_name + "/protos", ["protos/CrazyflieNoPhysics.proto"])
 )
 data_files.append(("share/" + package_name + "/resource", ["resource/my_robot.urdf"]))
 data_files.append(("share/" + package_name + "/resource", ["resource/my_crazy.urdf"]))
 data_files.append(("share/" + package_name + "/resource", ["resource/my_camera.urdf"]))
 data_files.append(("share/" + package_name + "/config", ["config/video.rviz"]))
-# data_files.append(('share/' + package_name + '/my_package', ['my_package/pid_controller.py']))
 data_files.append(("share/" + package_name, ["package.xml"]))
 
 setup(
