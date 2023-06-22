@@ -2,6 +2,7 @@ build/
 install/
 log/
 .vscode/
+!.vscode/settings.json
 
 # Ignore unwanted world files
 /worlds/.*
