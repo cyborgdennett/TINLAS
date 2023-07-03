@@ -225,25 +225,25 @@ class SwarmPathing(Node):
             q.x = np.radians(q.x)
             q.y = np.radians(q.y)
             q.z = np.radians(q.z)
-            
+
             # calculate the fiducial yaw
             yaw = atan2(2.0*(q.y*q.z + q.w*q.x), q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z)
             # find the difference between orientation and angle to radius based on the yaw
             dyaw = a-yaw
             new_yaw = yaw + dyaw
-            
+
             # translate to linear x, y
             maxspeed = 0.05  # keep it slow
             x = maxspeed*cos(new_yaw)
             y = -maxspeed*sin(new_yaw)
-            
+
             drone.twist = Twist()
             drone.twist.linear.x = x
             drone.twist.linear.y = y
             drone.twist.linear.z = 1.0  # keep it at 1 meter
-            
+
             # self.get_logger().info("Drone " + str(drone.id) + " yaw: " + str(yaw) + " dyaw: " + str(dyaw) + " new_yaw: " + str(new_yaw) + " x: " + str(x) + " y: " + str(y) + " z: " + str(drone.twist.linear.z) + " d: " + str(d) + " a: " + str(a) + " da: " + str(da) + " p: " + str(p) + " angle_to_center " + str(angle_to_center) + " center " + str(center) + " point_on_radius " + str(point_on_radius))
-        
+
             # send msg to drone
             self.nodes_cmd_vel[drone.id].publish(drone.twist)
 

@@ -30,7 +30,7 @@ def generate_launch_description():
         arguments = ['--x', '0', '--y', '0', '--z', '1', '--yaw', '0', '--pitch', '0', '--roll', '0', '--frame-id', 'map', '--child-frame-id', '/agent_1/gps']
     )
     return LaunchDescription(
-        # [zmq_bridge, fiducial_follower, swarm_pathing]
-        [zmq_bridge, fiducial_follower]
+        [zmq_bridge, fiducial_follower, swarm_pathing]
+        # [zmq_bridge, fiducial_follower]
         # [swarm_pathing]
     )

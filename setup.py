@@ -16,7 +16,8 @@ def package_files(data_files, directory_list, same_destination=False):
         for (path, directories, filenames) in os.walk(directory):
             for filename in filenames:
                 file_path = os.path.join(path, filename)
-                install_path = os.path.join('share', package_name, directory if same_destination else "", path)
+                #TODO: fix this, it is ruined but works, alot of duplicate files
+                install_path = os.path.join('share', package_name, directory if same_destination else path)
                 if install_path in paths_dict.keys():
                     paths_dict[install_path].append(file_path)
                 else:

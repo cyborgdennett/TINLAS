@@ -21,6 +21,11 @@ TexturedBackground {
 }
 TexturedBackgroundLight {
 }
+Robot {
+  name "crazyflie_supervisor"
+  supervisor TRUE
+  controller "<extern>"
+}
 Crazyflie {
   translation -.5 -.5 0.01
   controller "<extern>"
@@ -77,6 +82,5 @@ Robot {
     }
   ]
   name "my_camera"
-  supervisor TRUE
   window "generic_window"
 }

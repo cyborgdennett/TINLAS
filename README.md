@@ -66,3 +66,23 @@ While developing, and you change code and want to start up again use:
 colcon build;source install/local_setup.bash;ros2 launch my_package crazy_launch.py
 ```
 in the ros_ws
+
+# Adding webcams to WSL2
+
+Guide: https://gist.github.com/edjdavid/513cbee3f9a10cd06e9e49e8bdfa0f96
+
+Install this tool: https://github.com/bluenviron/mediamtx#installation
+
+Install ffmpeg: (Powershell)
+``` bash
+choco install ffmpeg
+```
+Then add C:\ProgramData\chocolatey\lib\ffmpeg\tools\ffmpeg\bin to the Windows PATH
+Bad quality stream
+```
+ffmpeg -f dshow -i video="Sony Camera (Imaging Edge)" -framerate 30 -video_size 1024x576 -f rtsp -rtsp_transport udp rtsp://172.26.160.1:8554/webcam.h264
+```
+For better quality video, but slower time:
+```
+ffmpeg -f dshow -i video="Sony Camera (Imaging Edge)" -pix_fmt yuv420p -c:v libx264 -preset ultrafast -b:v 600k -framerate 30 -video_size 1024x576 -f rtsp -rtsp_transport udp rtsp://172.26.160.1:8554/webcam.h264
+```

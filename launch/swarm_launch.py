@@ -16,6 +16,7 @@ from launch.substitutions import TextSubstitution
 package_dir = get_package_share_directory("my_package")
 robot_description = robot_description = pathlib.Path(os.path.join(package_dir, "resource", "crazyflie.urdf")).read_text()
 camera_description = pathlib.Path(os.path.join(package_dir, "resource", "my_camera.urdf")).read_text()
+supervisor_description = pathlib.Path(os.path.join(package_dir, "resource", "supervisor.urdf")).read_text()
 
 def gen_crazyflie_node(id):
     
@@ -30,12 +31,6 @@ def gen_crazyflie_node(id):
             {"robot_description": robot_description},
         ])
 
-def get_aruco_node(id):
-    
-    return Node(
-        package="my_package",
-        
-    )
     
 def generate_launch_description():
 
@@ -51,11 +46,20 @@ def generate_launch_description():
             {"robot_description": camera_description},
         ],
     )
+    supervisor_driver = Node(
+        package="webots_ros2_driver",
+        executable="driver",
+        additional_env={"WEBOTS_CONTROLLER_URL": controller_url_prefix() + "crazyflie_supervisor"},
+        parameters=[
+            {"robot_description": supervisor_description},
+        ]
+    )
 
     return LaunchDescription(
         [
             webots,
             my_camera_driver,
+            supervisor_driver,
             launch.actions.RegisterEventHandler(
                 event_handler=launch.event_handlers.OnProcessExit(
                     target_action=webots,

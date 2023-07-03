@@ -6,7 +6,7 @@ from aruco_msgs.msg import MarkerArray, Marker
 from apriltag_msgs.msg import AprilTagDetectionArray, AprilTagDetection, Point as _Point
 from webots_ros2_msgs.srv import SpawnNodeFromString
 
-
+import time
 import sys
 import zmq
 
@@ -23,6 +23,7 @@ class ZmqBridge(Node):
         # ### ROS2 ###
         # create ROS2 publishers
         self.move_drone_publisher = self.create_publisher(MoveDrone, 'move_drone', 1)
+        self.move_drone_supervisor_publisher = self.create_publisher(MoveDrone, '/supervisor/move_drone', 1)
         self.detected_drone_location_publisher = self.create_publisher(String, 'detected_drone_location', 1)
         
         self.webots_spawn_service = self.create_client(SpawnNodeFromString, '/spawn_node_from_string')
@@ -35,14 +36,19 @@ class ZmqBridge(Node):
         # create ROS2 subscribers
         self.create_subscription(AprilTagDetectionArray, '/fiducial/apriltag_array', self.apriltag_callback, 1)
         self.create_subscription(MarkerArray, '/fiducial/aruco_array', self.aruco_callback, 1)
+        # set timer for ZMQ publishes
+        self.marker_timer = time.time()
+        self.marker_timer_treshold = 0.5
+        self.apriltag_timer = time.time()
+        self.apriltag_timer_treshold = 0.5
         
         # ### ZMQ ###
         # create zmq client
-        self.zmq_commander_client = Commander("simulation")
-        self.zmq_commander_ip = "tcp://145.24.238.11:5555"
+        self.zmq_commander_client = Commander("virtual_commander")
+        self.zmq_commander_ip = "tcp://145.24.238.108:5555"
         
-        self.zmq_tracker_client = Tracking("simulation")
-        self.zmq_tracker_ip = "tcp://145.24.238.11:5556"
+        self.zmq_tracker_client = Tracking("virtual_tracking")
+        self.zmq_tracker_ip = "tcp://145.24.238.108:5556"
         
         # create sockets
         self.zmq_context = zmq.Context()
@@ -76,11 +82,13 @@ class ZmqBridge(Node):
         if self.zmq_tracker_socket in socks and socks[self.zmq_tracker_socket] == zmq.POLLIN:
             message = Receive(self.zmq_tracker_socket)  # Receive the message from socket1
             # Process the message from socket1
+            self.get_logger().info('Msg recv tracker')
             self.process_tracker_message(message)
 
         if self.zmq_commander_socket in socks and socks[self.zmq_commander_socket] == zmq.POLLIN:
             message = Receive(self.zmq_commander_socket)  # Receive the message from socket2
             # Process the message from socket2
+            self.get_logger().info('Msg recv commander')
             self.process_commander_message(message)
             
         # continue
@@ -199,6 +207,13 @@ class ZmqBridge(Node):
                 int(marker.pose.pose.position.y)
             )
             
+            # TODO: not needed at this moment
+            continue
+            if time.time() - self.marker_timer < self.marker_timer_treshold:
+                continue
+            
+            self.marker_timer = time.time()
+            
             DealerSend(self.zmq_tracker_socket, self.zmq_tracker_client, Drone(str(markerId)), action_details)
         pass
 
@@ -222,14 +237,22 @@ class ZmqBridge(Node):
                 int(detection.centre.y)
             )
             
+            
+            if time.time() - self.apriltag_timer < self.apriltag_timer_treshold:
+                continue
+            
+            self.apriltag_timer = time.time()
+            
             DealerSend(self.zmq_tracker_socket, self.zmq_tracker_client, Drone(str(markerId)), action_details)
         
-        pass
     
     def process_tracker_message(self, message):
+        self.get_logger().info('Received message: "%s"' % message.action_details.ACTION_NAME)
         pass
     
     def process_commander_message(self, message):
+        
+        self.get_logger().info('Received message: "%s"' % message.action_details.ACTION_NAME)
 
         if message.action_details.ACTION_NAME == ACTION_NAMES.action_move_drone:
 
@@ -241,17 +264,22 @@ class ZmqBridge(Node):
 
             move_drone_msg.marker = message.action_details.target
 
-            #TODO: needs work
+            #TODO: needs work, 
             if self.simulated_drones.get(message.action_details.target) == True:
                 # only send msg if the drone is simulated
                 # TODO fill in cmd_vel msg instead
-                self.get_logger().info('Publishing: ' + str(move_drone_msg.pose.position.x) + " " + str(move_drone_msg.pose.position.y) + " " + str(move_drone_msg.pose.orientation.z))
+                self.get_logger().info('Publishing: id:' + str(move_drone_msg.marker) + ' ' + str(move_drone_msg.pose.position.x) + " " + str(move_drone_msg.pose.position.y) + " " + str(move_drone_msg.pose.orientation.z))
                 self.move_drone_publisher.publish(move_drone_msg)
                 return
             # check if real_drone is not already in the list
             if self.real_drones.get(message.action_details.target) == None:
                 self.real_drones[message.action_details.target] = move_drone_msg
-            # remove the old location 
+            # remove the old location
+
+            # TODO: send msg to crazyflie_supervisor
+            self.move_drone_supervisor_publisher.publish(move_drone_msg)
+
+            pass
             _id = message.action_details.target
             delete_node_msg = String()
             delete_node_msg.data = f"twin_{_id}"
@@ -260,7 +288,10 @@ class ZmqBridge(Node):
             req = SpawnNodeFromString()
             req.data = f"Crazyflie {{ name \"twin_{_id}\" url \"aruco/aruco_{_id}.jpg\" }}"
             self.webots_spawn_service.call_async(req)
+            
+        if message.action_details.ACTION_NAME == ACTION_NAMES.action_takeoff_drone:
 
+            pass
         pass
         
 
