@@ -184,7 +184,7 @@ def InitDealerConnection(ip, socket, client):
     socket.setsockopt_string(zmq.IDENTITY, client.client_name)  # Set a unique identity for the client using setsockopt_string
     socket.connect(ip)  # bind to the bot socket
     messageTarget = Server("server")
-    messageObject = Message(ts, messageClientInfo,messageAction,messageTarget)
+    messageObject = Message(ts, messageClientInfo, messageAction, messageTarget)
     json_message = CreateMessage(messageObject)
     socket.send(json_message.encode())
     time.sleep(0.1)
