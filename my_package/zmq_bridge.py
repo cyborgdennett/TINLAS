@@ -30,12 +30,15 @@ class ZmqBridge(Node):
         
         self.mqz_client_commander = Commander("Tracking")
         self.mqz_router_ip = "tcp://145.24.238.11:5555"
-
+        self.mqz_client_tracker = Tracking("Tracking")
+        self.mqz_router_tracking_ip = "tcp://145.24.238.11.5556"
         # create zmq socket
         self.zmq_context = zmq.Context()
         self.dealerSocket = self.zmq_context.socket(zmq.DEALER)
+        self.trackingDealerSocket = self.zmq_context.socket(zmq.DEALER)
         self.client = self.mqz_client_commander
         self.ip = self.mqz_router_ip
+        InitDealerConnection(self.mqz_router_tracking_ip, self.trackingDealerSocket, self.mqz_client_tracker)
         InitDealerConnection(self.ip, self.dealerSocket, self.client)
 
 
@@ -153,7 +156,7 @@ class ZmqBridge(Node):
 
                             # Send the marker location here using com.ActionSendDetectedDroneLocation and com.DealerSend
                             action = ActionSendDetectedDroneLocation(str(markerId), int(cX), int(cY))
-                            DealerSend(self.dealerSocket, self.mqz_client_commander, Drone(str(markerId)), action)
+                            DealerSend(self.trackingDealerSocket, self.mqz_client_tracker, Drone(str(markerId)), action)
                             
                             # Set targetSend to True to avoid sending the location repeatedly
                             targetSend = True
@@ -177,7 +180,7 @@ class ZmqBridge(Node):
                         markIDposition[markerId] = [cX, cY]
                         # print(markIDposition)
                         action = ActionSendDetectedDroneLocation(str(markerId), int(markIDposition[markerId][0]), int(markIDposition[markerId][1]))
-                        DealerSend(self.dealerSocket, self.mqz_client_commander, Drone(str(markerId)), action)
+                        DealerSend(self.trackingDealerSocket, self.mqz_client_tracker, Drone(str(markerId)), action)
                         time.sleep(0.5)
                 else:
                     # Add new coordinates to dict
@@ -185,7 +188,7 @@ class ZmqBridge(Node):
                     markIDposition[markerId] = [cX, cY]
                     print(markIDposition)
                     action = ActionSendDetectedDroneLocation(str(markerId), int(markIDposition[markerId][0]), int(markIDposition[markerId][1]))
-                    DealerSend(self.dealerSocket, self.mqz_client_commander, Drone(str(markerId )), action)
+                    DealerSend(self.trackingDealerSocket, self.mqz_client_tracker, Drone(str(markerId )), action)
                     time.sleep(0.5)
 
 def main(args=None):
