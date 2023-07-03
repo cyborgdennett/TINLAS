@@ -64,5 +64,5 @@ x_offset=y_offset = int(width/9)
 bg[y_offset:y_offset+tag.shape[0], x_offset:x_offset+tag.shape[1]] = tag
 
 dirpath = os.getcwd()
-file_name = os.path.join(dirpath, args["output"] + ".png")
+file_name = os.path.join(dirpath, args["output"] + ".jpg")
 cv2.imwrite(file_name, bg)

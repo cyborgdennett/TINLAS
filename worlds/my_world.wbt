@@ -146,6 +146,16 @@ Robot {
   }
   physics Physics {
   }
-  controller "<extern>"
+  #controller "<extern>"
   name "my_robot"
+}
+Robot {
+  name "agent_0"
+  controller "<extern>"
+  supervisor TRUE
+}
+Robot {
+  name "agent_1"
+  controller "<extern>"
+  supervisor TRUE
 }

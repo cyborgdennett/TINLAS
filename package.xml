@@ -11,6 +11,10 @@
   <depend>geometry_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>webots_ros2_driver</depend>
+  <depend>apriltag_msgs</depend>
+  <depend>aruco_ros</depend>
+  <depend>crazyflie_swarm_interfaces</depend>
+  <depend>aruco_msgs</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

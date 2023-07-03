@@ -22,30 +22,31 @@ TexturedBackground {
 TexturedBackgroundLight {
 }
 Crazyflie {
-  translation 0.25 0.25 0.01
-}
-CrazyflieNoPhysics {
-  translation -0.25 -0.25 0.01
-}
-Crazyflie {
-  hidden linearVelocity_0 6.272835020872584e-08 -2.584029260135209e-08 2.0960877684962337e-08
-  hidden angularVelocity_0 1.266666542029303e-07 -8.210366572524276e-07 -1.3983284912472805e-08
-  translation 1.22108337474564e-06 -1.9160650284057757e-06 0.46319136050216275
-  rotation -0.007539712373215752 -0.304379789303725 0.9525209166211254 3.0756598716050533e-07
+  translation -.5 -.5 0.01
   controller "<extern>"
-  name "my_crazy"
+  name "agent_1"
   extensionSlot [
     CrazyflieDistanceSensorUp{}
     CrazyflieDistanceSensorDown{}
-    CrazyflieFeducial{}
+    CrazyflieFeducial{url "aruco/aruco_1.jpg"}
+  ]
+}
+Crazyflie {
+  translation .5 .5 0.01
+  controller "<extern>"
+  name "agent_0"
+  extensionSlot [
+    CrazyflieDistanceSensorUp{}
+    CrazyflieDistanceSensorDown{}
+    CrazyflieFeducial{url "aruco/aruco_0.jpg"}
   ]
 }
 RectangleArena {
-  floorSize 2 2
-  wallHeight 1
+  floorSize 5 5
+  wallHeight 2.2
 }
 Robot {
-  translation 0 0 1
+  translation 0 0 2.2
   controller "<extern>"
   children [
     Solid {

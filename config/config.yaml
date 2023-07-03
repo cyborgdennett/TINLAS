@@ -6,4 +6,26 @@ action: circle
 
 random_placement: false
 
+# feducial tracker config
+feducial_tracker:
+  camera_topic: 
+  apriltag_array_topic: 
+  apriltag_overlay_publish_enable: true
+  apriltag_overlay_topic: 
+
+  # camera_topic: "/camera/top_view"
+  # camera_info_topic: "/camera/top_view/camera_info"
+  # feducial_coordinate_topic: "/feducial_coordinate"
+  # feducial_overlay_topic: "/feducial_overlay"
+  # feducial_overlay_publish_enable: true
+/aruco_node:
+  ros__parameters:
+    marker_size: 0.055
+    aruco_dictionary_id: DICT_5X5_250
+    image_topic: /camera/top_view
+    camera_info_topic: /camera/top_view/camera_info
+
+  
+
+# dashboard
 

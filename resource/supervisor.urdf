@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<robot name="supervisor">
+    <webots>
+        <plugin type="my_package.supervisor_driver.CrazyflieSupervisorDriver" />
+    </webots>
+</robot>

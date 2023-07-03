@@ -1,0 +1,4 @@
+myCustomPkg:
+ubuntu:
+    pip:
+        packages: ["git+https://github.com/user/repo.git@master"]

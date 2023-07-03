@@ -4,6 +4,7 @@
         <device reference="camera" type="Camera">
             <ros>
                 <topicName>/camera/top_view</topicName>
+                <frameName>camera_top_link</frameName>
                 <scanRate>10</scanRate>
                 <alwaysOn>true</alwaysOn>
             </ros>

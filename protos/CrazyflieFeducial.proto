@@ -2,10 +2,10 @@
 
 PROTO CrazyflieFeducial 
 [
-    field MFString img "feducial.jpg"
+    field MFString url "feducial.jpg"
 ]
 {
-    Solid {
+    Transform {
         translation 0 0 0.03
         children [
             
@@ -13,7 +13,7 @@ PROTO CrazyflieFeducial
                 appearance PBRAppearance {
                     baseColor 0.8 0.8 0.8
                     baseColorMap ImageTexture {
-                        url IS img
+                        url IS url
                     }
                     roughness 0.5
                     metalness 0
