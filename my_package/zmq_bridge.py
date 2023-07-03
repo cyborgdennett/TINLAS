@@ -136,16 +136,57 @@ class ZmqBridge(Node):
         
         for detection in msg.detections:
             markerId = detection.id
-            
-            action_details = ActionSendDetectedDroneLocation(
-                str(markerId), 
-                int(detection.centre.x), 
-                int(detection.centre.y)
-            )
-            
-            DealerSend(self.dealerSocket, self.mqz_client_commander, Drone(str(markerId)), action_details)
-        
-        pass
+            cX = detection.pose.pose.position.x
+            cY = detection.pose.pose.position.y
+        # print("Detected")
+            if markerId == 6:
+                current_time = time.time()
+                # Check if markerId is already in the dictionary
+                if markerId in target_positions:
+                    # Check if the current location is the same as the stored location
+                    if cX == target_positions[markerId][0] and cY == target_positions[markerId][1]:
+                        # Check if enough time has passed (2 seconds) since the last detection
+                        if current_time - marker_detection_time[markerId] >= 2 and not targetSend:
+                            print("UPDATE TARGET POS")
+                            target_positions[markerId] = [cX, cY]
+                            marker_detection_time[markerId] = current_time
+
+                            # Send the marker location here using com.ActionSendDetectedDroneLocation and com.DealerSend
+                            action = ActionSendDetectedDroneLocation(str(markerId), int(cX), int(cY))
+                            DealerSend(self.dealerSocket, self.mqz_client_commander, Drone(str(markerId)), action)
+                            
+                            # Set targetSend to True to avoid sending the location repeatedly
+                            targetSend = True
+                    else:
+                        # The marker position has changed, so reset the targetSend flag'
+                        target_positions[markerId] = [cX, cY]
+                        print("TARGET SEND FALSE")
+                        targetSend = False
+                else:
+                    # Add the new marker to the dictionary if it's not already present
+                    print("NEW MARKER")
+                    target_positions[markerId] = [cX, cY]
+                    marker_detection_time[markerId] = current_time
+                    targetSend = False
+            else:
+                # Handling markers other than 6
+                if markerId in markIDposition:
+                    if cX != markIDposition[markerId][0] or cY != markIDposition[markerId][1]:
+                        # Update location on the ID
+                        print("UPDATE POSITION")
+                        markIDposition[markerId] = [cX, cY]
+                        # print(markIDposition)
+                        action = ActionSendDetectedDroneLocation(str(markerId), int(markIDposition[markerId][0]), int(markIDposition[markerId][1]))
+                        DealerSend(self.dealerSocket, self.mqz_client_commander, Drone(str(markerId)), action)
+                        time.sleep(0.5)
+                else:
+                    # Add new coordinates to dict
+                    print("NEW MARKER NEW POSITION")
+                    markIDposition[markerId] = [cX, cY]
+                    print(markIDposition)
+                    action = ActionSendDetectedDroneLocation(str(markerId), int(markIDposition[markerId][0]), int(markIDposition[markerId][1]))
+                    DealerSend(self.dealerSocket, self.mqz_client_commander, Drone(str(markerId )), action)
+                    time.sleep(0.5)
 
 def main(args=None):
     rclpy.init(args=args)
@@ -166,4 +207,8 @@ def main(args=None):
 
 
 if __name__ == '__main__':
+    markIDposition = {}
+    targetSend = False
+    target_positions = {}
+    marker_detection_time = {}
     main()
