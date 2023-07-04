@@ -21,8 +21,8 @@ class PathPublisher(Node):
     def timer_callback(self):
         msg = MoveDrone()
         msg.marker = 1
-        msg.header.stamp = self.get_clock().now().to_msg()    
-
+        msg.pose.position.x = 0.5
+        msg.pose.position.y = -0.5
         self.publisher_.publish(msg)
         self.get_logger().info('Publishing Path')
 

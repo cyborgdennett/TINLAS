@@ -4,7 +4,6 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from aruco_msgs.msg import MarkerArray, Marker
 from apriltag_msgs.msg import AprilTagDetectionArray, AprilTagDetection, Point as _Point
-from webots_ros2_msgs.srv import SpawnNodeFromString
 
 import time
 import sys
@@ -24,10 +23,9 @@ class ZmqBridge(Node):
         # create ROS2 publishers
         self.move_drone_publisher = self.create_publisher(MoveDrone, 'move_drone', 1)
         self.move_drone_supervisor_publisher = self.create_publisher(MoveDrone, '/supervisor/move_drone', 1)
+        self.set_goal_tag_supervisor_publisher = self.create_publisher(MoveDrone, '/supervisor/set_goal_tag', 1)
         self.detected_drone_location_publisher = self.create_publisher(String, 'detected_drone_location', 1)
         
-        self.webots_spawn_service = self.create_client(SpawnNodeFromString, '/spawn_node_from_string')
-        self.webots_remove_publisher = self.create_publisher(String, '/remove_node', 1)
         
         # keep a list of simulated drones and real drones
         self.simulated_drones = dict()
@@ -264,7 +262,7 @@ class ZmqBridge(Node):
 
             move_drone_msg.marker = message.action_details.target
 
-            #TODO: needs work, 
+            #TODO: needs work, could also be done by swarm_controller
             if self.simulated_drones.get(message.action_details.target) == True:
                 # only send msg if the drone is simulated
                 # TODO fill in cmd_vel msg instead
@@ -274,20 +272,9 @@ class ZmqBridge(Node):
             # check if real_drone is not already in the list
             if self.real_drones.get(message.action_details.target) == None:
                 self.real_drones[message.action_details.target] = move_drone_msg
-            # remove the old location
-
-            # TODO: send msg to crazyflie_supervisor
+                
+            # send msg to crazyflie_supervisor, it will be spawned in webots world
             self.move_drone_supervisor_publisher.publish(move_drone_msg)
-
-            pass
-            _id = message.action_details.target
-            delete_node_msg = String()
-            delete_node_msg.data = f"twin_{_id}"
-            self.webots_remove_publisher.publish(delete_node_msg)
-            # update location with webots service
-            req = SpawnNodeFromString()
-            req.data = f"Crazyflie {{ name \"twin_{_id}\" url \"aruco/aruco_{_id}.jpg\" }}"
-            self.webots_spawn_service.call_async(req)
             
         if message.action_details.ACTION_NAME == ACTION_NAMES.action_takeoff_drone:
 
@@ -298,19 +285,19 @@ class ZmqBridge(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    minimal_publisher = ZmqBridge()
+    zmq_bridge = ZmqBridge()
 
 
     try:
-        rclpy.spin(minimal_publisher)
+        rclpy.spin(zmq_bridge)
     finally:
         # Destroy the node explicitly
         # (optional - otherwise it will be done automatically
         # when the garbage collector destroys the node object)
-        minimal_publisher.zmq_commander_socket.close()
-        minimal_publisher.zmq_tracker_socket.close()
-        minimal_publisher.zmq_context.destroy()
-        minimal_publisher.destroy_node()
+        zmq_bridge.zmq_commander_socket.close()
+        zmq_bridge.zmq_tracker_socket.close()
+        zmq_bridge.zmq_context.destroy()
+        zmq_bridge.destroy_node()
     rclpy.shutdown()
 
 

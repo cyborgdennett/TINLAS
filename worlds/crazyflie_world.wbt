@@ -6,9 +6,8 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/floors/protos/RectangleArena.proto"
 EXTERNPROTO "../protos/CrazyflieDistanceSensorDown.proto"
 EXTERNPROTO "../protos/CrazyflieDistanceSensorUp.proto"
-EXTERNPROTO "../protos/CrazyflieFeducial.proto"
-EXTERNPROTO "../protos/CrazyflieNoPhysics.proto"
-# EXTERNPROTO "../protos/Crazyflie.proto"
+IMPORTABLE EXTERNPROTO "../protos/CrazyflieFeducial.proto"
+IMPORTABLE EXTERNPROTO "../protos/CrazyflieNoPhysics.proto"
 
 WorldInfo {
 }
@@ -23,27 +22,39 @@ TexturedBackgroundLight {
 }
 Robot {
   name "crazyflie_supervisor"
-  supervisor TRUE
   controller "<extern>"
+  supervisor TRUE
 }
 Crazyflie {
-  translation -.5 -.5 0.01
-  controller "<extern>"
+  translation -0.5 -0.5 0.01
   name "agent_1"
+  controller "<extern>"
   extensionSlot [
-    CrazyflieDistanceSensorUp{}
-    CrazyflieDistanceSensorDown{}
-    CrazyflieFeducial{url "aruco/aruco_1.jpg"}
+    CrazyflieDistanceSensorUp {
+    }
+    CrazyflieDistanceSensorDown {
+    }
+    CrazyflieFeducial {
+      url [
+        "aruco/aruco_1.jpg"
+      ]
+    }
   ]
 }
 Crazyflie {
-  translation .5 .5 0.01
-  controller "<extern>"
+  translation 0.5 0.5 0.01
   name "agent_0"
+  controller "<extern>"
   extensionSlot [
-    CrazyflieDistanceSensorUp{}
-    CrazyflieDistanceSensorDown{}
-    CrazyflieFeducial{url "aruco/aruco_0.jpg"}
+    CrazyflieDistanceSensorUp {
+    }
+    CrazyflieDistanceSensorDown {
+    }
+    CrazyflieFeducial {
+      url [
+        "aruco/aruco_0.jpg"
+      ]
+    }
   ]
 }
 RectangleArena {
@@ -52,7 +63,6 @@ RectangleArena {
 }
 Robot {
   translation 0 0 2.2
-  controller "<extern>"
   children [
     Solid {
       scale 0.5 0.5 0.5
@@ -73,7 +83,6 @@ Robot {
       }
     }
     Camera {
-      name "camera"
       translation 0.01 0 0.01
       rotation 0 1 0 1.5708
       fieldOfView 0.87
@@ -82,5 +91,6 @@ Robot {
     }
   ]
   name "my_camera"
+  controller "<extern>"
   window "generic_window"
 }

@@ -38,7 +38,7 @@ PROTO CrazyflieNoPhysics [
           }
           CadShape {
             url [
-              "meshes/cf2_assembly.dae"
+              "protos/meshes/cf2_assembly.dae"
             ]
           }
         ]
@@ -111,7 +111,7 @@ PROTO CrazyflieNoPhysics [
               }
               geometry Mesh {
                 url [
-                  "../meshes/ccw_prop.dae"
+                  "protos/meshes/ccw_prop.dae"
                 ]
               }
             }

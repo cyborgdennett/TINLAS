@@ -3,10 +3,13 @@
 PROTO CrazyflieFeducial 
 [
     field MFString url "feducial.jpg"
+    field SFVec3f translation 0 0 0.03
+    field SFRotation rotation 0 0 1 0
 ]
 {
     Transform {
-        translation 0 0 0.03
+        translation IS translation
+        rotation IS rotation
         children [
             
             Shape {
