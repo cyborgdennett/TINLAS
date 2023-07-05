@@ -4,6 +4,7 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from aruco_msgs.msg import MarkerArray, Marker
 from apriltag_msgs.msg import AprilTagDetectionArray, AprilTagDetection, Point as _Point
+from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion, Twist
 
 import time
 import re
@@ -13,6 +14,8 @@ import zmq
 from .smol_v2 import * 
 
 from crazyflie_swarm_interfaces.msg import MoveDrone
+
+FLIGHT_HEIGHT = 0.3
 
 
 class ZmqBridge(Node):
@@ -202,7 +205,7 @@ class ZmqBridge(Node):
                 self.get_logger().info('Detected tag with ID: %d' % markerId)
             #TODO send the right message
             action_details = ActionSendDetectedDroneLocation(
-                str(markerId), 
+                markerId, 
                 0,
                 0,
                 [marker.pose.pose.position.x, marker.pose.pose.position.y, marker.pose.pose.position.z],
@@ -240,21 +243,22 @@ class ZmqBridge(Node):
                 # add to the list of simulated drones
                 self.simulated_drones[markerId] = (-1,-1)
                         
-            new_pos = (int(detection.centre.x/10), int(detection.centre.y/10))
+            new_pos = (int(detection.centre.x/10), int(detection.centre.y/20))
             if self.simulated_drones[markerId] == new_pos:
                 continue
             self.simulated_drones[markerId] = new_pos
+            if markerId == 0:
+                continue
             action_details = ActionSendDetectedDroneLocation(
-                str(markerId), 
+                markerId, 
                 int(detection.centre.x/10), 
-                int(detection.centre.y/10),
+                int(detection.centre.y/20),
                 list(),
                 0.0,
                 0.0,
                 0.0,
             )
-            
-            
+
             # if time.time() - self.apriltag_timer < self.apriltag_timer_treshold:
             #     continue
             
@@ -280,14 +284,16 @@ class ZmqBridge(Node):
             # move_simulated_drone_msg.pose.position.x = float(0.0 if message.action_details.destination_pos_x == None else message.action_details.destination_pos_x)
             move_simulated_drone_msg.pose.position.x = message.action_details.drones_tvec_x
             move_simulated_drone_msg.pose.position.y = message.action_details.drones_tvec_y
-            move_simulated_drone_msg.pose.position.z = message.action_details.drones_tvec_z # 0.7 # use 0.7 if this spawn under map
-            move_simulated_drone_msg.pose.orientation.x = float(message.action_details.drones_rotation_x)
-            move_simulated_drone_msg.pose.orientation.y = float(message.action_details.drones_rotation_y)
-            move_simulated_drone_msg.pose.orientation.z = float(message.action_details.drones_rotation_z)
+            move_simulated_drone_msg.pose.position.z = FLIGHT_HEIGHT  # message.action_details.drones_tvec_z # 0.7 # use 0.7 if this spawn under map
+            # move_simulated_drone_msg.pose.orientation.x = float(message.action_details.drones_rotation_x)
+            # move_simulated_drone_msg.pose.orientation.y = float(message.action_details.drones_rotation_y)
+            move_simulated_drone_msg.pose.orientation.z = 1.0
+            # move_simulated_drone_msg.pose.orientation.w = float(message.action_details.drones_rotation_z)
             
             # send to the supervisor
             
             if message.action_details.drone_name == self.GOAL_TAG: 
+                move_simulated_drone_msg.pose.position.z = 0.001
                 self.set_goal_tag_supervisor_publisher.publish(move_simulated_drone_msg)
             else:
                 self.move_drone_supervisor_publisher.publish(move_simulated_drone_msg)
@@ -296,59 +302,48 @@ class ZmqBridge(Node):
 
             move_drone_msg = MoveDrone() # ROS2 message, the position is a pixel position, only have to listen to the x and y position
             move_drone_msg.marker = message.action_details.target
+            
+            self.get_logger().info('Received message: "%s"' % str(message.action_details))
 
-            #TODO: needs work, could also be done by swarm_controller
-            if self.simulated_drones.get(message.action_details.target) == True:
-                move_drone_msg.pose.position.x = float(0.0 if message.action_details.destination_pos_x == None else message.action_details.destination_pos_x)
-                move_drone_msg.pose.position.y = float(0.0 if message.action_details.destination_pos_y == None else message.action_details.destination_pos_y)
-                move_drone_msg.pose.position.z = 1.0
-                move_drone_msg.pose.orientation.z = float(0.0 if message.action_details.target_rotation == None else message.action_details.target_rotation)
+            # if self.simulated_drones.get(message.action_details.target) == True:
+            move_drone_msg.pose.position.x = float(0.0 if message.action_details.target_pos_x == None else message.action_details.target_pos_x)
+            move_drone_msg.pose.position.y = float(0.0 if message.action_details.target_pos_y == None else message.action_details.target_pos_y)
+            move_drone_msg.pose.position.z = 1.0
+            move_drone_msg.pose.orientation.z = float(0.0 if message.action_details.target_rotation == None else message.action_details.target_rotation)
 
-                # only send msg if the drone is simulated
-                # TODO fill in cmd_vel msg instead
-                self.get_logger().info('Publishing: id:' + str(move_drone_msg.marker) + ' ' + str(move_drone_msg.pose.position.x) + " " + str(move_drone_msg.pose.position.y) + " " + str(move_drone_msg.pose.orientation.z))
-                # self.move_drone_publisher.publish(move_drone_msg)
+            # only send msg if the drone is simulated
+            self.get_logger().info('Publishing: id:' + str(move_drone_msg.marker) + ' ' + str(move_drone_msg.pose.position.x) + " " + str(move_drone_msg.pose.position.y) + " " + str(move_drone_msg.pose.orientation.z))
+            # self.move_drone_publisher.publish(move_drone_msg)
+            
+            # make move command
+            twist = Twist()
+            twist.linear.x = float(0.0 if message.action_details.target_pos_x == None else message.action_details.target_pos_x)
+            twist.linear.y = float(0.0 if message.action_details.target_pos_y == None else message.action_details.target_pos_y)
+            
+            # SPEED LIMITING
+            maxspeed = 0.05
+            twist.linear.x = maxspeed if twist.linear.x > maxspeed else twist.linear.x
+            twist.linear.y = maxspeed if twist.linear.y > maxspeed else twist.linear.y
+            
+            # the following is for move_linear
+            if self.simulated_drones_publisher.get(move_drone_msg.marker) is None:
+                for topic in self.get_topic_names_and_types():
+                    if not (topic[0].startswith("/agent_") and topic[0].endswith("/cmd_vel")):
+                        continue
                 
-                # make move command
-                twist = Twist()
-                twist.linear.x = float(0.0 if message.action_details.destination_pos_x == None else message.action_details.destination_pos_x)
-                twist.linear.y = float(0.0 if message.action_details.destination_pos_y == None else message.action_details.destination_pos_y)
-                # the following is for move_linear
-                if self.simulated_drones_publisher[move_drone_msg.marker] == None:
-                    for topic in self.get_topic_names_and_types():
-                        if not (topic[0].startswith("/agent_") and topic[0].endswith("/cmd_vel")):
-                            continue
+                    marker_id = int(re.findall(r'\d+', topic[0])[0])
+                    if not (marker_id == message.action_details.target):
+                        continue
                     
-                        marker_id = int(re.findall(r'\d+', topic[0])[0])
-                        if not(marker_id == message.action_details.target):
-                            continue
-                        
-                        self.simulated_drones_publisher[move_drone_msg.marker] = self.create_publisher(Twist, topic[0], 10)
+                    self.simulated_drones_publisher[move_drone_msg.marker] = self.create_publisher(Twist, topic[0], 10)
 
-                    if self.simulated_drones_publisher[move_drone_msg.marker] == None:                        
-                        # no topic found, return
-                        return
-                    
-                # publish message 
-                self.simulated_drones_publisher[move_drone_msg.marker].publish(move_drone_msg)
-            # check if real_drone is not already in the list
-            if self.real_drones.get(message.action_details.target) == None:
-                self.real_drones[message.action_details.target] = True
+                if self.simulated_drones_publisher[move_drone_msg.marker] == None:                        
+                    # no topic found, return
+                    return
                 
-            # send msg to crazyflie_supervisor, it will be spawned in webots world
-            # TODO: but first transform to webots coordinates
-            # should realistically be done by the camera node...
-            # other idea is to take the position of the camera and draw a line of the path of an individual pixel, and add the length of that line to the position of the camera
-            
-            move_drone_msg.pose.position.x = float(0.0 if message.action_details.destination_pos_x == None else message.action_details.destination_pos_x) * pixel_to_meter
-            move_drone_msg.pose.position.y = float(0.0 if message.action_details.destination_pos_y == None else message.action_details.destination_pos_y) * pixel_to_meter
-            move_drone_msg.pose.position.z = 0.7
-            move_drone_msg.pose.orientation.z = 1.0
-            
-            self.move_drone_supervisor_publisher.publish(move_drone_msg)
-            
-        pass
-        
+            # publish message 
+            self.simulated_drones_publisher[move_drone_msg.marker].publish(twist)
+
 
 def main(args=None):
     rclpy.init(args=args)

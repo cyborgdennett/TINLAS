@@ -193,18 +193,21 @@ class CrazyflieSupervisorDriver:
                 translation_field = child.getField('translation')
                 translation_field.setSFVec3f([msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
                 rotation_field = child.getField('rotation')
-                rotation_field.setSFRotation([msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w])
+                rotation_field.setSFRotation([0.0,0.0,1.0,0.0])
+                # rotation_field.setSFRotation([msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w])
                 return
             
         # drone not found, spawn drone
         self.node.get_logger().info('Spawning Fiducial_tag: %i' % msg.marker)
         self.gen_aruco(msg.marker)
         
+        #TODO make size variable
         drone_string = "CrazyflieFeducial {" + \
             f"translation {x} {y} {z} " + \
-            f"rotation {roll} {pitch} {yaw} {angle} " + \
+            "size 0.15 0.15 0.001 " + \
             f"url [ \"{url}\" ] " + \
         "}"
+            # f"rotation {roll} {pitch} {yaw} {angle} " + \
         children.importMFNodeFromString(-1, drone_string)
         
     # Generate aruco tag to the '/tmp' folder (tested in ubuntu, not sure about windows)   

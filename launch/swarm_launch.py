@@ -83,7 +83,7 @@ def generate_launch_description():
             fiducial_follower,
             swarm_pathing,
             tf2_broadcaster,
-            zmq_bridge,
+            # zmq_bridge,
             launch.actions.RegisterEventHandler(
                 event_handler=launch.event_handlers.OnProcessExit(
                     target_action=webots,

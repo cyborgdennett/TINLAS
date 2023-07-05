@@ -40,6 +40,7 @@ class Drone:
     pixel_position: _Point = None
     fiducial_offset: float = 0.0
     target_found: bool = False
+    intermidiate_target: Point | None = None
     
 
 
@@ -404,9 +405,117 @@ class StraightToTargetSwarmExecutor(SwarmExecutor):
             #     " \ttw_x= "+str(drone.twist.linear.x)+\
             #     " \ttw_y= "+str(drone.twist.linear.y)+\
             #     " \ttw_z= "+str(drone.twist.linear.z))
-            
-            
+def checkCollision(a, b, c, x, y, radius):
+     
+    # Finding the distance of line
+    # from center.
+    dist = ((abs(a * x + b * y + c)) /
+            math.sqrt(a * a + b * b))
+    
+    
+ 
+    # Checking if the distance is less
+    # than, greater than or equal to radius.
+    if (radius >= dist):
+        return True
+    else:
+        return None
         
+class CircleNearnessSwarmExecutor(SwarmExecutor):  
+    def __init__(self, swarm):
+        super().__init__(swarm)
+        self.minimal_distance = 0.15 # distance between drones that cannot be crossed
+        self.maxspeed = 0.5
+        self.precision = 0.005
+        self.intermediate_precision = 0.05
+        self.slowdown_distance = 0.1 # distance to target where the drone starts to slow down
+        self.maximum_distance = 0.6 # distance between drones where no need to check anymore
+    
+    def execute(self):
+        # using only xy, find the intersectinos between the drones
+        # like ray tracing, but with circles
+        """collect all the intersections between the drones"""
+        """if the distance between the drones is less than the minimal distance, add it to the intersections"""
+        intersections = {}
+        np.zeros((len(self.swarm.drones),len(self.swarm.drones)), dtype="uint8")
+        for drone in self.swarm.drones:
+            for drone2 in self.swarm.drones:
+                # find distance
+                node_distance = sqrt((drone.position.x - drone2.position.x)**2 + (drone.position.y - drone2.position.y)**2)
+                # if node_distance < self.minimal_distance:
+                #     continue
+                if node_distance < self.maximum_distance:
+                    # check collision with target
+                    target_function = lambda x,y: (x-drone.position.x)**2 + (y-drone.position.y)**2 - self.minimal_distance**2
+                    checkCollision()
+                    if intersections.get(drone.id) is None:
+                        intersections[drone.id] = []
+                    intersections[drone.id].append((drone2.id,node_distance))
+            
+        # remove nodes that have no intersections
+        shortest_path, calc_path = [], []
+        for drone in self.swarm.drones:
+            (shortest_path, calc_path)[intersections.get(drone.id) is not None].append(drone)
+        # https://stackoverflow.com/questions/949098/how-can-i-partition-split-up-divide-a-list-based-on-a-condition
+        self.shortest_path_pathing(shortest_path)
+        
+        # split intersections into clusters of intersections
+        clusters = []
+        if len(l) == len(calc_path): # only one cluster
+            clusters.append(calc_path)
+        else:
+            for d1, l in intersections.items():
+                if intersections.get(d2.id) is None:
+                    intersections[d2.id] = []
+                intersections[d2.id].append((d2.id,distance))
+            
+        for cluster in clusters:
+            # check path intersect radius
+            
+            
+            
+            pass
+        
+
+
+    def shortest_path_pathing(self, drones, skip_intermediate=False):
+        # if close enough to target, set to hover
+        for drone in drones:
+            if skip_intermediate:
+                drone.intermediate_target = None
+                
+            target = drone.intermediate_target if drone.intermediate_target is not None else drone.target
+            distance_to_target = sqrt((drone.position.x - target.x)**2 + (drone.position.y - target.y)**2)
+            
+            if distance_to_target < self.precision:
+                drone.twist = Twist()
+                drone.twist.linear.x = 0.0
+                drone.twist.linear.y = 0.0
+                
+                if drone.intermediate_target is not None:
+                    # next iteration, go to the target
+                    drone.intermediate_target = None
+                else:
+                    drone.target_found = True
+                                    
+                # let the drone turn in circles to show it has completed the task
+                drone.twist.angular.z = 1.5
+                continue
+            
+            angle_to_target = atan2(drone.target.y - drone.position.y , target.x - drone.position.x)       
+            yaw = np.radians(drone.orientation.z + drone.fiducial_offset)
+            new_yaw = angle_to_target-yaw
+
+            # translate to linear x, y
+            # get the speed based on the distance to the target
+            speed = self.maxspeed
+            if distance_to_target < self.slowdown_distance and drone.intermediate_target is None:
+                speed = speed * abs(distance_to_target) / self.slowdown_distance
+            
+            drone.twist = Twist()
+            drone.twist.linear.x = speed*sin(new_yaw) # idk why this is sin and not cos, in the formula it is
+            drone.twist.linear.y = speed*cos(new_yaw)
+            drone.twist.angular.z = 0.0 # This could be used to change yaw for a non-holomonic robot.
 
 class StraightlineFormationSwarmExecutor(SwarmExecutor):
     def __init__(self, swarm):

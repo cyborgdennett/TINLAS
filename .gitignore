@@ -6,3 +6,9 @@ log/
 
 # Ignore unwanted world files
 /worlds/.*
+
+#ignore __pycache__ files
+__pycache__/
+*/__pycache__/
+*/__pycache__/*
+*/__pycache__

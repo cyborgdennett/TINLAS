@@ -24,7 +24,7 @@ class ACTION_NAMES:
     action_location_fysical_drones: str = "action_location_fysical_drones"
 @dataclass
 class Drone:
-    client_name: str
+    client_name: int
     client_position_x: Optional[int] = None
     client_position_y: Optional[int] = None
     client_rotation_z: Optional[float] = None
@@ -70,7 +70,7 @@ class ActionInitClientToServerConnection:
 #CAMERA -> SERVER
 @dataclass
 class ActionSendDetectedDroneLocation:
-    detected_drone_name: str
+    detected_drone_name: int
     detected_drone_pos_x: int
     detected_drone_pos_y: int
     detected_drone_tvecs: list
