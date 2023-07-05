@@ -113,7 +113,7 @@ class SwarmPathing(Node):
         timer_period = 1  # seconds
         self.timer = self.create_timer(timer_period, self.check_for_new_topics)
         
-        execution_period = 1.0 # around 3 webots ticks
+        execution_period = .5 # around 3 webots ticks
         self.execute_timer = self.create_timer(execution_period, self.execute)
         self.busy = False
         
@@ -125,11 +125,16 @@ class SwarmPathing(Node):
         # self.__selected_swarm_goal().
         if self.busy:
             return
-        if self.swarm_executor == None and len(self.swarm.get_drones()) != 2:
+        if self.swarm_executor is None and len(self.swarm.get_drones()) >= 2:
             self.swarm_executor = StraightToTargetSwarmExecutor(self.swarm)
+            return
+        if self.swarm.get_drone(1) is not None and self.swarm.get_drone(1).position.x == 0:
+            return
+        if self.swarm_executor is None:
             return
         # self.get_logger().info("Executing")
         self.busy = True
+        # self.__move_swarm_forward()
         self.swarm_executor.execute()
         
         # send twist to all drones 
@@ -178,7 +183,7 @@ class SwarmPathing(Node):
                 self.nodes_cmd_vel[marker_id] = self.create_publisher(Twist, topic[0], 1)
                 self.swarm.add_drone(marker_id)
                 
-                self.get_logger().info("Topic: " + topic[0] + " added")
+                self.get_logger().info("Topic: " + topic[0] + " added id:" + str(marker_id))
             # self.get_logger().info("Topic: " + topic[0] + " not added")
             # listen to gps
             if topic[0].startswith("/agent") and topic[0].endswith("/gps"):
@@ -241,7 +246,7 @@ class SwarmPathing(Node):
     def __move_swarm_forward(self):
         for drone in self.swarm.drones:
             drone.twist = Twist()
-            drone.twist.linear.x = 0.1
+            drone.twist.linear.y = 0.1
             self.nodes_cmd_vel[drone.id].publish(drone.twist)
             
     def __circle(self):
@@ -276,6 +281,7 @@ class SwarmPathing(Node):
 
             # calculate the fiducial yaw
             yaw = atan2(2.0*(q.y*q.z + q.w*q.x), q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z)
+            yaw = yaw - np.radians(90) # test if this is correct
             # find the difference between orientation and angle to radius based on the yaw
             dyaw = a-yaw
             new_yaw = yaw + dyaw
@@ -332,11 +338,14 @@ class StraightToTargetSwarmExecutor(SwarmExecutor):
         # for i, drone in enumerate(self.swarm.drones):
         #     drone.target = (targets[i][0],targets[i][1],.7)
         #     self.target_index += 1
-            
+    """ if the drone moves x + 0.1 , it goes to the east(right), if north is top of the screen"""
+    """ if the drone moves y + 0.1 , it goes to the north(forward), if north is top of the screen"""
+    """ 90 degree to the right(with the clock) = -1.5708 in webots"""
+    """ 90 degree to the left(against the clock) = 1.5708 in webots"""
     def execute(self):
         for drone in self.swarm.drones:
             if drone.target is None:
-                self.swarm.logger.info("Drone " + str(drone.id) + " setting target " + str(self.targets[self.target_index]))
+                self.swarm.logger.info("Drone " + str(drone.id) + " setting target " + str(self.targets[self.target_index]) + " Position "+ str(drone.position))
                 drone.target = Point()
                 drone.target.x = self.targets[self.target_index][0]
                 drone.target.y = self.targets[self.target_index][1]
@@ -357,22 +366,34 @@ class StraightToTargetSwarmExecutor(SwarmExecutor):
             # degrees to radians            
 
             # calculate the fiducial yaw
-            yaw = np.radians(drone.orientation.z)
+            yaw = np.radians(drone.orientation.z-90) #have to do -90 because the fiducial is placed wrong
+            # TODO: add that to the drone class
+            # yaw = yaw + np.radians(90) # test if this is correct
             # find the difference between orientation and angle to radius based on the yaw
-            dyaw = angle_to_target-yaw
-            new_yaw = yaw + dyaw
+            new_yaw = angle_to_target-yaw
 
             # translate to linear x, y
             maxspeed = 0.01  # keep it slow
             
             drone.twist = Twist()
-            drone.twist.linear.x = maxspeed*cos(new_yaw)
-            drone.twist.linear.y = maxspeed*sin(new_yaw)
+            drone.twist.linear.x = maxspeed*sin(new_yaw) # idk why this is sin and not cos, in the formula it is
+            drone.twist.linear.y = maxspeed*cos(new_yaw)
             drone.twist.angular.z = 0.0 # This could be used to change yaw.
             
             d = sqrt((drone.position.x - drone.target.x)**2 + (drone.position.y - drone.target.y)**2)
             
-            # self.swarm.logger.info("id: "+str(drone.id)+" x: "+ str(drone.position.x)+" y: "+ str(drone.position.y)+" d: "+str(d)+" yaw: "+str(yaw)+" dyaw: "+str(dyaw)+" new_yaw: "+str(new_yaw)+" x: "+str(drone.twist.linear.x)+" y: "+str(drone.twist.linear.y)+" z: "+str(drone.twist.linear.z))
+            self.swarm.logger.info("id: "+str(drone.id)+\
+                " \tx= "+ str(drone.position.x)+\
+                " \ty= "+ str(drone.position.y)+\
+                " \ttx= "+ str(drone.target.x)+\
+                " \tty= "+ str(drone.target.y)+\
+                " \td= "+str(d)+\
+                " \tangle_to_target= "+str(np.degrees(angle_to_target))+\
+                " \tyaw= "+str(np.degrees(yaw))+\
+                " \tnew_yaw= "+str(np.degrees(new_yaw))+\
+                " \ttw_x= "+str(drone.twist.linear.x)+\
+                " \ttw_y= "+str(drone.twist.linear.y)+\
+                " \ttw_z= "+str(drone.twist.linear.z))
             
             
         
