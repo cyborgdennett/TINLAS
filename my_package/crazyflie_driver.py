@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 from rclpy.time import Time
 
-from geometry_msgs.msg import Twist, TransformStamped
+from geometry_msgs.msg import Twist, TransformStamped, Point
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
 
@@ -15,6 +15,7 @@ from tf2_ros import TransformBroadcaster
 sys.path.append('/home/casper/crazyflie-firmware/build')
 import cffirmware
 
+HOVER_HEIGHT = 0.7
 
 class CrazyflieDriver:
     def init(self, webots_node, properties):
@@ -74,6 +75,7 @@ class CrazyflieDriver:
         self.node.create_subscription(Twist, 'cmd_vel', self.cmd_vel_callback, 1)
         self.laser_publisher = self.node.create_publisher(LaserScan, 'scan', 10)
         self.odom_publisher = self.node.create_publisher(Odometry, 'odom', 10)
+        self.gps_publisher = self.node.create_publisher(Point, 'gps', 10)
 
         self.tfbr = TransformBroadcaster(self.node)
 
@@ -110,6 +112,7 @@ class CrazyflieDriver:
         self.msg_laser.angle_max =  -0.5 * 2*pi
         self.msg_laser.angle_increment = -1.0*pi/2
         self.laser_publisher.publish(self.msg_laser)
+        
 
     def cmd_vel_callback(self, twist):
         self.target_twist = twist
@@ -137,6 +140,12 @@ class CrazyflieDriver:
         vy_global = (y_global - self.past_y_global)/dt
         z_global = self.gps.getValues()[2]
         vz_global = (z_global - self.past_z_global)/dt
+        
+        msg_gps = Point()
+        msg_gps.x = x_global
+        msg_gps.y = y_global
+        msg_gps.z = z_global
+        self.gps_publisher.publish(msg_gps)
 
 
 
@@ -213,12 +222,11 @@ class CrazyflieDriver:
         sensors.gyro.x = degrees(roll_rate)
         sensors.gyro.y = degrees(pitch_rate)
         sensors.gyro.z = degrees(yaw_rate)
-        yawDesired=0
 
         ## Fill in Setpoints
         setpoint = cffirmware.setpoint_t()
         setpoint.mode.z = cffirmware.modeAbs
-        setpoint.position.z = 1.0
+        setpoint.position.z = HOVER_HEIGHT
         setpoint.mode.yaw = cffirmware.modeVelocity
         # TODO: find out why this multipication is necessary...
         setpoint.attitudeRate.yaw = degrees(self.target_twist.angular.z)*5

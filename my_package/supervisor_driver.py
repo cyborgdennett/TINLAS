@@ -13,10 +13,6 @@ import sys
 import tf_transformations
 from tf2_ros import TransformBroadcaster
 
-# Change this path to your crazyflie-firmware folder
-sys.path.append('/home/casper/crazyflie-firmware/build')
-import cffirmware
-
 # imports for aruco tag generation
 import cv2
 import sys
@@ -38,6 +34,8 @@ class CrazyflieSupervisorDriver:
         
         self.node.create_subscription(MoveDrone, '/supervisor/move_drone', self.move_drone_callback, 10)
         self.node.create_subscription(MoveDrone, '/supervisor/set_goal_tag', self.set_goal_tag_callback, 10)
+        self.node.create_subscription(MoveDrone, "/supervisor/chessboard", self.chessboard_callback, 10)
+        
         
         # make a cleanup timer to remove stale drones from the world
         self.last_update_time = {}
@@ -47,31 +45,31 @@ class CrazyflieSupervisorDriver:
         self.node.get_logger().info('Crazyflie supervisor driver initialized')
         
         # test spawning one
-        md = MoveDrone()    
-        md.marker = 5
-        md.pose.position.x = 0.5
-        md.pose.position.y = -0.5
-        md.pose.position.z = 1.0
-        md.pose.orientation.x = 0.0
-        md.pose.orientation.y = 0.0
-        md.pose.orientation.z = 1.0
-        md.pose.orientation.w = 0.0
-        self.move_drone_callback(md)
+        # md = MoveDrone()    
+        # md.marker = 5
+        # md.pose.position.x = 0.2
+        # md.pose.position.y = -0.2
+        # md.pose.position.z = 1.0
+        # md.pose.orientation.x = 0.0
+        # md.pose.orientation.y = 0.0
+        # md.pose.orientation.z = 1.0
+        # md.pose.orientation.w = 0.0
+        # self.set_goal_tag_callback(md)
         
-        # test spawning an fiducial
-        md.marker = 6
-        md.pose.position.x = 0.25
-        md.pose.position.y = -0.25
-        md.pose.position.z = 0.015
-        self.set_goal_tag_callback(md)
-        # test what will happen
-        time.sleep(1)
-        self.set_goal_tag_callback(md)
-        md.pose.position.x = 0.5
-        md.pose.position.y = -0.5
-        md.pose.position.z = 0.5
-        md.marker = 5
-        self.move_drone_callback(md)
+        # # test spawning an fiducial
+        # md.marker = 6
+        # md.pose.position.x = 0.25
+        # md.pose.position.y = -0.25
+        # md.pose.position.z = 0.015
+        # md.pose.orientation.z = 0.5
+        # self.set_goal_tag_callback(md)
+        # md.pose.position.x = 0.1
+        # md.pose.position.y = -0.1
+        # md.pose.position.z = 0.5
+        # md.pose.orientation.z = -0.5
+        # md.marker = 7
+        # self.set_goal_tag_callback(md)
+        # self.move_drone_callback(md)
 
     def cleanup_callback(self):
         now = time.time()
@@ -98,6 +96,34 @@ class CrazyflieSupervisorDriver:
                 # assume only one gets removed
                 return
     
+    def chessboard_callback(self, msg: MoveDrone):
+        x, y, z = msg.pose.position.x, msg.pose.position.y, msg.pose.position.z
+        roll, pitch, yaw, angle = msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w
+        
+        children = self.__robot.getRoot().getField('children')
+        for i in range(children.getCount()):
+            child = children.getMFNode(i)
+            if child.getTypeName() != 'Chessboard':
+                continue
+            # only need to update
+            translation_field = child.getField('translation')
+            translation_field.setSFVec3f([msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
+            rotation_field = child.getField('rotation')
+            rotation_field.setSFRotation([msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w])
+            return
+            
+        # board not found, spawn drone
+        
+        drone_string = \
+        "Chessboard { "+ \
+            f"translation {x} {y} {z} " + \
+            f"rotation {roll} {pitch} {yaw} {angle} " + \
+            f"size 0.5 0.3125 " + \
+            f"floorTileSize 0.125 0.125 " + \
+        " }"
+            
+        children.importMFNodeFromString(-1, drone_string)
+    
     def move_drone_callback(self, msg: MoveDrone):
         # update timer
         self.last_update_time[msg.marker] = time.time()
@@ -118,21 +144,28 @@ class CrazyflieSupervisorDriver:
             if _id == msg.marker:
                 # only need to update
                 translation_field = child.getField('translation')
-                translation_field.setSFVec3f([msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
+                translation_field.setSFVec3f([x,y,z])
                 rotation_field = child.getField('rotation')
-                rotation_field.setSFRotation([msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w])
+                rotation_field.setSFRotation([roll, pitch, yaw, angle])
                 return
             
         # drone not found, spawn drone
         self.node.get_logger().info('Spawning drone: %i' % msg.marker)
         self.gen_aruco(msg.marker)
         
-        drone_string = "CrazyflieNoPhysics { name " + f"\"twin_agent_{msg.marker}\" " + \
+        drone_string = \
+        "CrazyflieNoPhysics { " + \
+            f"name \"twin_agent_{msg.marker}\" " + \
             f"translation {x} {y} {z} " + \
             f"rotation {roll} {pitch} {yaw} {angle} " + \
-            "extensionSlot [ CrazyflieFeducial { url [ " + \
-                f"\"aruco_{msg.marker}.jpg\"" + \
-            " ] } ] }"
+            "extensionSlot [ " + \
+                "CrazyflieFeducial { " +\
+                    "url [ " + \
+                        f"\"aruco_{msg.marker}.jpg\" " + \
+                    "] " + \
+                "} "+ \
+            "] " + \
+        "}"
         children.importMFNodeFromString(-1, drone_string)
         
         # removing drone can be done with ROS2Supervisor @'/remove_drone' String() with data = name of drone

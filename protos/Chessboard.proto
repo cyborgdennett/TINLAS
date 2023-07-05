@@ -1,0 +1,32 @@
+#VRML_SIM R2023a utf8
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/floors/protos/Floor.proto"
+
+PROTO Chessboard [
+    field SFVec3f translation 0 0 0
+    field SFRotation rotation 0 0 1 0
+    field SFVec2f size 2 2
+    field SFVec2f floorTileSize 1 1
+]
+{
+    Solid {
+
+        translation IS translation
+        rotation IS rotation  
+        name "chessboard"
+        children [
+            Floor {
+                size IS size
+                tileSize IS floorTileSize
+                appearance PBRAppearance {
+                    baseColor 0.8 0.8 0.8
+                    metalness 0
+                    baseColorMap ImageTexture {
+                        url [
+                            "meshes/256x256.jpg"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

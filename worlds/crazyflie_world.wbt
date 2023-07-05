@@ -6,8 +6,11 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/floors/protos/RectangleArena.proto"
 EXTERNPROTO "../protos/CrazyflieDistanceSensorDown.proto"
 EXTERNPROTO "../protos/CrazyflieDistanceSensorUp.proto"
+EXTERNPROTO "../protos/Chessboard.proto"
+IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/robots/bitcraze/crazyflie/protos/Crazyflie.proto"
 IMPORTABLE EXTERNPROTO "../protos/CrazyflieFeducial.proto"
 IMPORTABLE EXTERNPROTO "../protos/CrazyflieNoPhysics.proto"
+IMPORTABLE EXTERNPROTO "../protos/Chessboard.proto"
 
 WorldInfo {
 }
@@ -20,45 +23,9 @@ TexturedBackground {
 }
 TexturedBackgroundLight {
 }
-Robot {
-  name "crazyflie_supervisor"
-  controller "<extern>"
-  supervisor TRUE
-}
-Crazyflie {
-  translation -0.5 -0.5 0.01
-  name "agent_1"
-  controller "<extern>"
-  extensionSlot [
-    CrazyflieDistanceSensorUp {
-    }
-    CrazyflieDistanceSensorDown {
-    }
-    CrazyflieFeducial {
-      url [
-        "aruco/aruco_1.jpg"
-      ]
-    }
-  ]
-}
-Crazyflie {
-  translation 0.5 0.5 0.01
-  name "agent_0"
-  controller "<extern>"
-  extensionSlot [
-    CrazyflieDistanceSensorUp {
-    }
-    CrazyflieDistanceSensorDown {
-    }
-    CrazyflieFeducial {
-      url [
-        "aruco/aruco_0.jpg"
-      ]
-    }
-  ]
-}
 RectangleArena {
   floorSize 5 5
+  floorTileSize 1 1
   wallHeight 2.2
 }
 Robot {
@@ -94,3 +61,46 @@ Robot {
   controller "<extern>"
   window "generic_window"
 }
+Robot {
+  name "crazyflie_supervisor"
+  controller "<extern>"
+  supervisor TRUE
+}
+Crazyflie {
+  translation -0.25 -0.25 0.01
+  name "agent_1"
+  controller "<extern>"
+  extensionSlot [
+    CrazyflieDistanceSensorUp {
+    }
+    CrazyflieDistanceSensorDown {
+    }
+    CrazyflieFeducial {
+      url [
+        "aruco/aruco_1.jpg"
+      ]
+    }
+  ]
+}
+Crazyflie {
+  translation 0.25 0.25 0.01
+  name "agent_0"
+  controller "<extern>"
+  extensionSlot [
+    CrazyflieDistanceSensorUp {
+    }
+    CrazyflieDistanceSensorDown {
+    }
+    CrazyflieFeducial {
+      url [
+        "aruco/aruco_0.jpg"
+      ]
+    }
+  ]
+}
+# Chessboard{
+#   translation 0 0 0.1
+#   rotation 0 0 1 0
+#   size 0.5 0.3
+#   floorTileSize 0.125 0.125 # tiles are 8*5, 0.0625 m per tile
+# }

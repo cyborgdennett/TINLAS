@@ -5,11 +5,13 @@ PROTO CrazyflieFeducial
     field MFString url "feducial.jpg"
     field SFVec3f translation 0 0 0.03
     field SFRotation rotation 0 0 1 0
+    field SFVec3f size 0.03 0.03 0.001
 ]
 {
-    Transform {
+    Solid {
         translation IS translation
         rotation IS rotation
+        name "CrazyflieFeducial"
         children [
             
             Shape {
@@ -22,9 +24,10 @@ PROTO CrazyflieFeducial
                     metalness 0
                 }
                 geometry Box {
-                    size 0.03 0.03 0.001
+                    size IS size
                 }
             }
         ]
+        
     }
 }

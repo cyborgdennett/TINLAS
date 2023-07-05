@@ -6,6 +6,7 @@ from aruco_msgs.msg import MarkerArray, Marker
 from apriltag_msgs.msg import AprilTagDetectionArray, AprilTagDetection, Point as _Point
 
 import time
+import re
 import sys
 import zmq
 
@@ -268,12 +269,37 @@ class ZmqBridge(Node):
                 # TODO fill in cmd_vel msg instead
                 self.get_logger().info('Publishing: id:' + str(move_drone_msg.marker) + ' ' + str(move_drone_msg.pose.position.x) + " " + str(move_drone_msg.pose.position.y) + " " + str(move_drone_msg.pose.orientation.z))
                 self.move_drone_publisher.publish(move_drone_msg)
-                return
+                
+                # the following is for move_linear
+                for topic in self.get_topic_names_and_types():
+                    if not (topic[0].startswith("/agent_") and topic[0].endswith("/cmd_vel")):
+                        continue
+                    
+                    marker_id = int(re.findall(r'\d+', topic[0])[0])
+                    if not(marker_id == message.action_details.target):
+                        continue
+                    
+                    pub = self.create_publisher(Twist, topic[0], 10)
+                    twist = Twist()
+                    twist.linear.x = float(0.0 if message.action_details.destination_pos_x == None else message.action_details.destination_pos_x)
+                    twist.linear.y = float(0.0 if message.action_details.destination_pos_y == None else message.action_details.destination_pos_y)
+                    pub.publish(move_drone_msg)
+                    self.destroy_publisher(pub)
+                        
             # check if real_drone is not already in the list
             if self.real_drones.get(message.action_details.target) == None:
-                self.real_drones[message.action_details.target] = move_drone_msg
+                self.real_drones[message.action_details.target] = True
                 
             # send msg to crazyflie_supervisor, it will be spawned in webots world
+            # TODO: but first transform to webots coordinates
+            # should realistically be done by the camera node...
+            # other idea is to take the position of the camera and draw a line of the path of an individual pixel, and add the length of that line to the position of the camera
+            
+            pixel_to_meter = 0.01
+            move_drone_msg.pose.position.x = float(0.0 if message.action_details.destination_pos_x == None else message.action_details.destination_pos_x) * pixel_to_meter
+            move_drone_msg.pose.position.y = float(0.0 if message.action_details.destination_pos_y == None else message.action_details.destination_pos_y) * pixel_to_meter
+            move_drone_msg.pose.position.z = 0.7
+            
             self.move_drone_supervisor_publisher.publish(move_drone_msg)
             
         if message.action_details.ACTION_NAME == ACTION_NAMES.action_takeoff_drone:

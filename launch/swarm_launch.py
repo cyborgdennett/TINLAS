@@ -54,12 +54,30 @@ def generate_launch_description():
             {"robot_description": supervisor_description},
         ]
     )
+    
+    fiducial_follower = Node(
+        package="my_package",
+        executable="fiducial_follower",
+        # parameters=params,
+    )
+    swarm_pathing = Node(
+        package="my_package",
+        executable="swarm_pathing",
+    )
+    tf2_broadcaster = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        arguments = ['--x', '0', '--y', '0', '--z', '0', '--yaw', '0', '--pitch', '0', '--roll', '0', '--frame-id', 'map', '--child-frame-id', 'scan']
+    )
 
     return LaunchDescription(
         [
             webots,
             my_camera_driver,
             supervisor_driver,
+            fiducial_follower,
+            swarm_pathing,
+            tf2_broadcaster,
             launch.actions.RegisterEventHandler(
                 event_handler=launch.event_handlers.OnProcessExit(
                     target_action=webots,
