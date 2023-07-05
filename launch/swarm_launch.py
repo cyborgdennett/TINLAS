@@ -70,6 +70,10 @@ def generate_launch_description():
         executable="static_transform_publisher",
         arguments = ['--x', '0', '--y', '0', '--z', '0', '--yaw', '0', '--pitch', '0', '--roll', '0', '--frame-id', 'map', '--child-frame-id', 'scan']
     )
+    zmq_bridge = Node(
+        package="my_package",
+        executable="zmq_bridge",
+    )
 
     return LaunchDescription(
         [
@@ -79,6 +83,7 @@ def generate_launch_description():
             fiducial_follower,
             swarm_pathing,
             tf2_broadcaster,
+            zmq_bridge,
             launch.actions.RegisterEventHandler(
                 event_handler=launch.event_handlers.OnProcessExit(
                     target_action=webots,

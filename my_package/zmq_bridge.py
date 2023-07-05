@@ -26,8 +26,8 @@ class ZmqBridge(Node):
         self.move_drone_supervisor_publisher = self.create_publisher(MoveDrone, '/supervisor/move_drone', 1)
         self.set_goal_tag_supervisor_publisher = self.create_publisher(MoveDrone, '/supervisor/set_goal_tag', 1)
         self.detected_drone_location_publisher = self.create_publisher(String, 'detected_drone_location', 1)
-        
-        
+        self.GOAL_TAG = 6
+
         # keep a list of simulated drones and real drones
         self.simulated_drones = dict()
         self.simulated_drones_publisher = dict()
@@ -45,10 +45,10 @@ class ZmqBridge(Node):
         # ### ZMQ ###
         # create zmq client
         self.zmq_commander_client = Commander("virtual_commander")
-        self.zmq_commander_ip = "tcp://145.24.238.108:5555"
+        self.zmq_commander_ip = "tcp://145.24.238.104:5555"
         
         self.zmq_tracker_client = Tracking("virtual_tracking")
-        self.zmq_tracker_ip = "tcp://145.24.238.108:5556"
+        self.zmq_tracker_ip = "tcp://145.24.238.104:5556"
         
         # create sockets
         self.zmq_context = zmq.Context()
@@ -203,9 +203,20 @@ class ZmqBridge(Node):
             #TODO send the right message
             action_details = ActionSendDetectedDroneLocation(
                 str(markerId), 
-                int(marker.pose.pose.position.x), 
-                int(marker.pose.pose.position.y)
+                0,
+                0,
+                [marker.pose.pose.position.x, marker.pose.pose.position.y, marker.pose.pose.position.z],
+                marker.pose.pose.orientation.x,
+                marker.pose.pose.orientation.y,
+                marker.pose.pose.orientation.z,
             )
+            """detected_drone_name: str
+                detected_drone_pos_x: int
+                detected_drone_pos_y: int
+                detected_drone_tvecs: list
+                detected_drone_rot_x: float
+                detected_drone_rot_y: float
+                detected_drone_rot_z: float"""
             
             # TODO: not needed at this moment
             continue
@@ -227,21 +238,27 @@ class ZmqBridge(Node):
                 continue
             if self.simulated_drones.get(markerId) == None:
                 # add to the list of simulated drones
-                self.simulated_drones[markerId] = True
-            
-                self.get_logger().info('Detected tag with ID: %d' % markerId)
-            
+                self.simulated_drones[markerId] = (-1,-1)
+                        
+            new_pos = (int(detection.centre.x/10), int(detection.centre.y/10))
+            if self.simulated_drones[markerId] == new_pos:
+                continue
+            self.simulated_drones[markerId] = new_pos
             action_details = ActionSendDetectedDroneLocation(
                 str(markerId), 
-                int(detection.centre.x), 
-                int(detection.centre.y)
+                int(detection.centre.x/10), 
+                int(detection.centre.y/10),
+                list(),
+                0.0,
+                0.0,
+                0.0,
             )
             
             
-            if time.time() - self.apriltag_timer < self.apriltag_timer_treshold:
-                continue
+            # if time.time() - self.apriltag_timer < self.apriltag_timer_treshold:
+            #     continue
             
-            self.apriltag_timer = time.time()
+            # self.apriltag_timer = time.time()
             
             DealerSend(self.zmq_tracker_socket, self.zmq_tracker_client, Drone(str(markerId)), action_details)
         
@@ -254,6 +271,27 @@ class ZmqBridge(Node):
         
         self.get_logger().info('Received message: "%s"' % message.action_details.ACTION_NAME)
 
+        if message.action_details.ACTION_NAME == ACTION_NAMES.action_location_fysical_drones:
+            if self.real_drones.get(message.action_details.drone_name) == None:
+                self.real_drones[message.action_details.drone_name] = True
+            self.get_logger().info('Received message: "%s"' % str(message.action_details))
+            move_simulated_drone_msg = MoveDrone()
+            move_simulated_drone_msg.marker = message.action_details.drone_name
+            # move_simulated_drone_msg.pose.position.x = float(0.0 if message.action_details.destination_pos_x == None else message.action_details.destination_pos_x)
+            move_simulated_drone_msg.pose.position.x = message.action_details.drones_tvec_x
+            move_simulated_drone_msg.pose.position.y = message.action_details.drones_tvec_y
+            move_simulated_drone_msg.pose.position.z = message.action_details.drones_tvec_z # 0.7 # use 0.7 if this spawn under map
+            move_simulated_drone_msg.pose.orientation.x = float(message.action_details.drones_rotation_x)
+            move_simulated_drone_msg.pose.orientation.y = float(message.action_details.drones_rotation_y)
+            move_simulated_drone_msg.pose.orientation.z = float(message.action_details.drones_rotation_z)
+            
+            # send to the supervisor
+            
+            if message.action_details.drone_name == self.GOAL_TAG: 
+                self.set_goal_tag_supervisor_publisher.publish(move_simulated_drone_msg)
+            else:
+                self.move_drone_supervisor_publisher.publish(move_simulated_drone_msg)
+            
         if message.action_details.ACTION_NAME == ACTION_NAMES.action_move_drone:
 
             move_drone_msg = MoveDrone() # ROS2 message, the position is a pixel position, only have to listen to the x and y position
@@ -302,16 +340,13 @@ class ZmqBridge(Node):
             # should realistically be done by the camera node...
             # other idea is to take the position of the camera and draw a line of the path of an individual pixel, and add the length of that line to the position of the camera
             
-            pixel_to_meter = 0.01
             move_drone_msg.pose.position.x = float(0.0 if message.action_details.destination_pos_x == None else message.action_details.destination_pos_x) * pixel_to_meter
             move_drone_msg.pose.position.y = float(0.0 if message.action_details.destination_pos_y == None else message.action_details.destination_pos_y) * pixel_to_meter
             move_drone_msg.pose.position.z = 0.7
+            move_drone_msg.pose.orientation.z = 1.0
             
             self.move_drone_supervisor_publisher.publish(move_drone_msg)
             
-        if message.action_details.ACTION_NAME == ACTION_NAMES.action_takeoff_drone:
-
-            pass
         pass
         
 

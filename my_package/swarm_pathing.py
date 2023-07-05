@@ -363,7 +363,7 @@ class StraightToTargetSwarmExecutor(SwarmExecutor):
                 # let the drone turn in circles to show it has completed the task
                 drone.twist.angular.z = 1.5
                 if not drone.target_found:
-                    self.swarm.logger.info("Drone " + str(drone.id) + " reached target " + str(drone.target) + " Position "+ str(drone.position))
+                    # self.swarm.logger.info("Drone " + str(drone.id) + " reached target " + str(drone.target) + " Position "+ str(drone.position))
                     drone.target_found = True
                 continue
             

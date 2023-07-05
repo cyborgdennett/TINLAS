@@ -20,6 +20,8 @@ class ACTION_NAMES:
     action_send_detected_drone_location: str = "action_send_detected_drone_location"
     action_update_sensor_ouput: str = "action_update_sensor_ouput"
     action_location_target_of_drones: str = "action_location_target_of_drones"
+    action_drones_reached_target: str = "action_drones_reached_target"
+    action_location_fysical_drones: str = "action_location_fysical_drones"
 @dataclass
 class Drone:
     client_name: str
@@ -65,12 +67,16 @@ class ActionInitClientToServerConnection:
     mutation: str = MUTATIONS.add
     ACTION_NAME: str = ACTION_NAMES.action_init_client_to_server_connection
 
+#CAMERA -> SERVER
 @dataclass
 class ActionSendDetectedDroneLocation:
     detected_drone_name: str
     detected_drone_pos_x: int
     detected_drone_pos_y: int
-    client_rotation_z: Optional[float] = None
+    detected_drone_tvecs: list
+    detected_drone_rot_x: float
+    detected_drone_rot_y: float
+    detected_drone_rot_z: float
     ACTION_NAME: str = ACTION_NAMES.action_send_detected_drone_location
 
 @dataclass
@@ -78,16 +84,33 @@ class ActionUpdateSensorOuput:
     drone: Drone
     ACTION_NAME: str = ACTION_NAMES.action_update_sensor_ouput
 
+#DICT FOR FYSICAL DRONES: SERVER -> RENS
 @dataclass
 class LocationAndTargetOfDrones:
     drones_dict: dict
     ACTION_NAME: str = ACTION_NAMES.action_location_target_of_drones
 
+#UPDATE FOR SIM SERVER -> SIM
+@dataclass
+class LocationFysicalDrones:
+    drone_name: int
+    drones_tvec_x: float
+    drones_tvec_y: float
+    drones_tvec_z: float
+    drones_rotation_x: float
+    drones_rotation_y: float
+    drones_rotation_z: float
+    ACTION_NAME: str = ACTION_NAMES.action_location_fysical_drones
+
+@dataclass
+class DronesReachedTarget:
+    ACTION_NAME: str = ACTION_NAMES.action_drones_reached_target
+
 @dataclass
 class Message:
     time_stamp: str
     sender_client_information: Union[Drone, Server]
-    action_details: Union[ActionMoveDrone,ActionInitClientToServerConnection,ActionSendDetectedDroneLocation,LocationAndTargetOfDrones]
+    action_details: Union[ActionMoveDrone,ActionInitClientToServerConnection,ActionSendDetectedDroneLocation,LocationAndTargetOfDrones,DronesReachedTarget,LocationFysicalDrones]
     message_target: Optional[Union[Drone,int]] = None
 
 # INTERNAL METHODS
@@ -147,6 +170,10 @@ def deserialize_json(json_data):
         action_details.drone = Drone(**client_details)
     elif action_details_data['ACTION_NAME'] == ACTION_NAMES.action_location_target_of_drones:
         action_details = LocationAndTargetOfDrones(**action_details_data)
+    elif action_details_data['ACTION_NAME'] == ACTION_NAMES.action_drones_reached_target:
+        action_details = DronesReachedTarget(**action_details_data)
+    elif action_details_data['ACTION_NAME'] == ACTION_NAMES.action_location_fysical_drones:
+        action_details = LocationFysicalDrones(**action_details_data)
 
     else:
         raise ValueError("Unknown action details type")
@@ -184,15 +211,21 @@ def InitDealerConnection(ip, socket, client):
     socket.setsockopt_string(zmq.IDENTITY, client.client_name)  # Set a unique identity for the client using setsockopt_string
     socket.connect(ip)  # bind to the bot socket
     messageTarget = Server("server")
-    messageObject = Message(ts, messageClientInfo, messageAction, messageTarget)
+    messageObject = Message(ts, messageClientInfo,messageAction,messageTarget)
     json_message = CreateMessage(messageObject)
     socket.send(json_message.encode())
     time.sleep(0.1)
 
+
 def SendMoveDrone(socket, client: Union[Drone,Server],message_target, drone_target, current_pos_x, current_pos_y,destination_pos_x,destination_pos_y,current_rotation = None):
+    """Sends a message with a ActionMoveDrone message_action. -SCROLL-\n
+    For use on servers this returns the action object.\n
+    For use on DRONES this uses DealerSend to immediately send the message
+    """
     action = ActionMoveDrone(int(drone_target),current_pos_x,current_pos_y,current_rotation,destination_pos_x,destination_pos_y)
     if(client.CLIENT_TYPE == "SERVER"):
-        RouterSend(socket,client,str(message_target),action)
+        return action
+        # RouterSend(socket,client,str(message_target),action)
     if(client.CLIENT_TYPE == "DRONE"):
         DealerSend(socket,client,str(message_target),action)
     pass
@@ -203,6 +236,20 @@ def DealerSend(socket, client, target, action):
     json_message = CreateMessage(messageObject)
     socket.send(json_message.encode())
 
+def RouterSendAll(socket,client,targetList: list,targetType,action):
+    """
+    RouterSendAll sends a message to all specified target types using RouterSend.
+
+    socket:\n\t the socket to use
+    client:\n\t information object about the sender
+    targetList:\n\t a list containing all connected clients
+    targetType:\n\t a upper_case string with the target type, i.e. "COMMANDER"
+    action:\n\t the action object for the message
+    return:\n\t void
+    """ 
+    for target in targetList:
+        if str(target.CLIENT_TYPE) == targetType:
+            RouterSend(socket,client,target.client_name,action)
 
 def RouterSend(socket, client, target, action):
     ts = GetTime()
