@@ -4,7 +4,7 @@ PROTO CrazyflieFeducial
 [
     field MFString url "feducial.jpg"
     field SFVec3f translation 0 0 0.03
-    field SFRotation rotation 0 0 1 0
+    field SFRotation rotation 0 0 1 1.5708
     field SFVec3f size 0.03 0.03 0.001
 ]
 {

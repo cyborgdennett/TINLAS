@@ -30,6 +30,7 @@ class ZmqBridge(Node):
         
         # keep a list of simulated drones and real drones
         self.simulated_drones = dict()
+        self.simulated_drones_publisher = dict()
         self.real_drones = dict()
         
         # create ROS2 subscribers
@@ -255,37 +256,43 @@ class ZmqBridge(Node):
 
         if message.action_details.ACTION_NAME == ACTION_NAMES.action_move_drone:
 
-            move_drone_msg = MoveDrone() # ROS2 message, the position is a pixel position
-            move_drone_msg.pose.position.x = float(0.0 if message.action_details.destination_pos_x == None else message.action_details.destination_pos_x)
-            move_drone_msg.pose.position.y = float(0.0 if message.action_details.destination_pos_y == None else message.action_details.destination_pos_y)
-            move_drone_msg.pose.position.z = 1.0
-            move_drone_msg.pose.orientation.z = float(0.0 if message.action_details.target_rotation == None else message.action_details.target_rotation)
-
+            move_drone_msg = MoveDrone() # ROS2 message, the position is a pixel position, only have to listen to the x and y position
             move_drone_msg.marker = message.action_details.target
 
             #TODO: needs work, could also be done by swarm_controller
             if self.simulated_drones.get(message.action_details.target) == True:
+                move_drone_msg.pose.position.x = float(0.0 if message.action_details.destination_pos_x == None else message.action_details.destination_pos_x)
+                move_drone_msg.pose.position.y = float(0.0 if message.action_details.destination_pos_y == None else message.action_details.destination_pos_y)
+                move_drone_msg.pose.position.z = 1.0
+                move_drone_msg.pose.orientation.z = float(0.0 if message.action_details.target_rotation == None else message.action_details.target_rotation)
+
                 # only send msg if the drone is simulated
                 # TODO fill in cmd_vel msg instead
                 self.get_logger().info('Publishing: id:' + str(move_drone_msg.marker) + ' ' + str(move_drone_msg.pose.position.x) + " " + str(move_drone_msg.pose.position.y) + " " + str(move_drone_msg.pose.orientation.z))
-                self.move_drone_publisher.publish(move_drone_msg)
+                # self.move_drone_publisher.publish(move_drone_msg)
                 
+                # make move command
+                twist = Twist()
+                twist.linear.x = float(0.0 if message.action_details.destination_pos_x == None else message.action_details.destination_pos_x)
+                twist.linear.y = float(0.0 if message.action_details.destination_pos_y == None else message.action_details.destination_pos_y)
                 # the following is for move_linear
-                for topic in self.get_topic_names_and_types():
-                    if not (topic[0].startswith("/agent_") and topic[0].endswith("/cmd_vel")):
-                        continue
+                if self.simulated_drones_publisher[move_drone_msg.marker] == None:
+                    for topic in self.get_topic_names_and_types():
+                        if not (topic[0].startswith("/agent_") and topic[0].endswith("/cmd_vel")):
+                            continue
                     
-                    marker_id = int(re.findall(r'\d+', topic[0])[0])
-                    if not(marker_id == message.action_details.target):
-                        continue
-                    
-                    pub = self.create_publisher(Twist, topic[0], 10)
-                    twist = Twist()
-                    twist.linear.x = float(0.0 if message.action_details.destination_pos_x == None else message.action_details.destination_pos_x)
-                    twist.linear.y = float(0.0 if message.action_details.destination_pos_y == None else message.action_details.destination_pos_y)
-                    pub.publish(move_drone_msg)
-                    self.destroy_publisher(pub)
+                        marker_id = int(re.findall(r'\d+', topic[0])[0])
+                        if not(marker_id == message.action_details.target):
+                            continue
                         
+                        self.simulated_drones_publisher[move_drone_msg.marker] = self.create_publisher(Twist, topic[0], 10)
+
+                    if self.simulated_drones_publisher[move_drone_msg.marker] == None:                        
+                        # no topic found, return
+                        return
+                    
+                # publish message 
+                self.simulated_drones_publisher[move_drone_msg.marker].publish(move_drone_msg)
             # check if real_drone is not already in the list
             if self.real_drones.get(message.action_details.target) == None:
                 self.real_drones[message.action_details.target] = True

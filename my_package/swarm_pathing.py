@@ -38,6 +38,8 @@ class Drone:
     cmd_vel: str = ""
     status: DroneStatus = DroneStatus.IDLE
     pixel_position: _Point = None
+    fiducial_offset: float = 0.0
+    target_found: bool = False
     
 
 
@@ -334,7 +336,9 @@ class StraightToTargetSwarmExecutor(SwarmExecutor):
         # set a point for each drone to go to
         self.targets = [[0.0,-0.1],[0.0,0.2],[-.2,.0],[-.2,-.2],[.2,-.2]]
         self.target_index = 0
-        self.precision = 0.05
+        self.precision = 0.005
+        self.maxspeed = 0.05  # keep it slow
+        self.slowdown_distance = 0.1 # distance to target where the drone starts to slow down
         # for i, drone in enumerate(self.swarm.drones):
         #     drone.target = (targets[i][0],targets[i][1],.7)
         #     self.target_index += 1
@@ -357,43 +361,49 @@ class StraightToTargetSwarmExecutor(SwarmExecutor):
                 drone.twist.linear.y = 0.0
                 
                 # let the drone turn in circles to show it has completed the task
-                # drone.twist.angular.z = 0.5
-                self.swarm.logger.info("Drone " + str(drone.id) + " reached target " + str(drone.target) + " Position "+ str(drone.position))
+                drone.twist.angular.z = 1.5
+                if not drone.target_found:
+                    self.swarm.logger.info("Drone " + str(drone.id) + " reached target " + str(drone.target) + " Position "+ str(drone.position))
+                    drone.target_found = True
                 continue
+            
+            drone.target_found = False
             
             # find angle to target
             angle_to_target = atan2(drone.target.y - drone.position.y , drone.target.x - drone.position.x)
-            # degrees to radians            
 
-            # calculate the fiducial yaw
-            yaw = np.radians(drone.orientation.z-90) #have to do -90 because the fiducial is placed wrong
-            # TODO: add that to the drone class
+            # degrees to radians the fiducial yaw            
+            yaw = np.radians(drone.orientation.z + drone.fiducial_offset) #have to do -90 because the fiducial is placed wrong
             # yaw = yaw + np.radians(90) # test if this is correct
             # find the difference between orientation and angle to radius based on the yaw
             new_yaw = angle_to_target-yaw
 
+            # calculate the distance to the target
+            d = sqrt((drone.position.x - drone.target.x)**2 + (drone.position.y - drone.target.y)**2)
             # translate to linear x, y
-            maxspeed = 0.01  # keep it slow
+            # get the speed based on the distance to the target
+            speed = self.maxspeed
+            if d < self.slowdown_distance:
+                speed = speed * abs(d) / self.slowdown_distance
             
             drone.twist = Twist()
-            drone.twist.linear.x = maxspeed*sin(new_yaw) # idk why this is sin and not cos, in the formula it is
-            drone.twist.linear.y = maxspeed*cos(new_yaw)
+            drone.twist.linear.x = speed*sin(new_yaw) # idk why this is sin and not cos, in the formula it is
+            drone.twist.linear.y = speed*cos(new_yaw)
             drone.twist.angular.z = 0.0 # This could be used to change yaw.
             
-            d = sqrt((drone.position.x - drone.target.x)**2 + (drone.position.y - drone.target.y)**2)
             
-            self.swarm.logger.info("id: "+str(drone.id)+\
-                " \tx= "+ str(drone.position.x)+\
-                " \ty= "+ str(drone.position.y)+\
-                " \ttx= "+ str(drone.target.x)+\
-                " \tty= "+ str(drone.target.y)+\
-                " \td= "+str(d)+\
-                " \tangle_to_target= "+str(np.degrees(angle_to_target))+\
-                " \tyaw= "+str(np.degrees(yaw))+\
-                " \tnew_yaw= "+str(np.degrees(new_yaw))+\
-                " \ttw_x= "+str(drone.twist.linear.x)+\
-                " \ttw_y= "+str(drone.twist.linear.y)+\
-                " \ttw_z= "+str(drone.twist.linear.z))
+            # self.swarm.logger.info("id: "+str(drone.id)+\
+            #     " \tx= "+ str(drone.position.x)+\
+            #     " \ty= "+ str(drone.position.y)+\
+            #     " \ttx= "+ str(drone.target.x)+\
+            #     " \tty= "+ str(drone.target.y)+\
+            #     " \td= "+str(d)+\
+            #     " \tangle_to_target= "+str(np.degrees(angle_to_target))+\
+            #     " \tyaw= "+str(np.degrees(yaw))+\
+            #     " \tnew_yaw= "+str(np.degrees(new_yaw))+\
+            #     " \ttw_x= "+str(drone.twist.linear.x)+\
+            #     " \ttw_y= "+str(drone.twist.linear.y)+\
+            #     " \ttw_z= "+str(drone.twist.linear.z))
             
             
         

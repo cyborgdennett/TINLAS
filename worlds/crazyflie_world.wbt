@@ -69,7 +69,7 @@ Robot {
 }
 Crazyflie {
   translation -0.25 -0.25 0.01
-  name "agent_1"
+  name "agent_3"
   controller "<extern>"
   extensionSlot [
     CrazyflieDistanceSensorUp {
@@ -78,14 +78,14 @@ Crazyflie {
     }
     CrazyflieFeducial {
       url [
-        "aruco/aruco_1.jpg"
+        "aruco/aruco_3.jpg"
       ]
     }
   ]
 }
 Crazyflie {
   translation 0.25 0.25 0.01
-  name "agent_0"
+  name "agent_7"
   controller "<extern>"
   extensionSlot [
     CrazyflieDistanceSensorUp {
@@ -94,7 +94,7 @@ Crazyflie {
     }
     CrazyflieFeducial {
       url [
-        "aruco/aruco_0.jpg"
+        "aruco/aruco_7.jpg"
       ]
     }
   ]
