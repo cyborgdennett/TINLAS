@@ -15,7 +15,7 @@ from tf2_ros import TransformBroadcaster
 sys.path.append('/home/casper/crazyflie-firmware/build')
 import cffirmware
 
-HOVER_HEIGHT = 0.5
+HOVER_HEIGHT = 0.3
 
 class CrazyflieDriver:
     def init(self, webots_node, properties):

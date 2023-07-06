@@ -90,7 +90,7 @@ Crazyflie {
   ]
 }
 Crazyflie {
-  translation 0.25 0.25 0.01
+  translation 0.35 0.25 0.01
   name "agent_7"
   controller "<extern>"
   extensionSlot [
@@ -105,3 +105,35 @@ Crazyflie {
     }
   ]
 }
+# Crazyflie {
+#   translation -0.25 0.25 0.01
+#   name "agent_8"
+#   controller "<extern>"
+#   extensionSlot [
+#     CrazyflieDistanceSensorUp {
+#     }
+#     CrazyflieDistanceSensorDown {
+#     }
+#     CrazyflieFeducial {
+#       url [
+#         "aruco/aruco_8.jpg"
+#       ]
+#     }
+#   ]
+# }
+# Crazyflie {
+#   translation 0.25 -0.35 0.01
+#   name "agent_4"
+#   controller "<extern>"
+#   extensionSlot [
+#     CrazyflieDistanceSensorUp {
+#     }
+#     CrazyflieDistanceSensorDown {
+#     }
+#     CrazyflieFeducial {
+#       url [
+#         "aruco/aruco_4.jpg"
+#       ]
+#     }
+#   ]
+# }

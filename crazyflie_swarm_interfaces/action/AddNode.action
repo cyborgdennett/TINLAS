@@ -1,0 +1,8 @@
+#Goal
+uint32 marker
+---
+#Result
+bool success
+---
+#Feedback
+float32 time_left

@@ -31,13 +31,13 @@ def gen_crazyflie_node(id):
             {"robot_description": robot_description},
         ])
 
-    
+
 def generate_launch_description():
 
     webots = WebotsLauncher(world=os.path.join(package_dir, "worlds", "crazyflie_world.wbt"))
 
-    N = 2
-    bot_ids = [3, 7]
+    N = 4
+    bot_ids = [3, 7, 4, 8]
     
     my_camera_driver = Node(
         package="webots_ros2_driver",
