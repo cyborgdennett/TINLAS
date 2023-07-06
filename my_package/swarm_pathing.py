@@ -226,10 +226,6 @@ class SwarmPathing(Node):
         #         self.get_logger().info("Topic " + str(topic) + " went offline")
         #         return
 
-    def __fiducial_callback(self, message, topic):
-        # check which drone sent the message
-        self.__camera_position_data[topic] = message
-
     def __set_swarm_goal_callback(self, message):
         # create function dictionary
         __swarm_goal_dict = {
@@ -329,7 +325,7 @@ class SwarmExecutor:
     def __init__(self, swarm):
         self.swarm = swarm
     def execute(self): # updates the twist to be sent to the drones
-        raise NotImplemented
+        raise NotImplementedError
 
 class StraightToTargetSwarmExecutor(SwarmExecutor):
     def __init__(self, swarm):

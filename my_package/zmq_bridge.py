@@ -43,15 +43,15 @@ class ZmqBridge(Node):
         self.marker_timer = time.time()
         self.marker_timer_treshold = 0.5
         self.apriltag_timer = time.time()
-        self.apriltag_timer_treshold = 0.5
+        self.apriltag_timer_treshold = 0.2
         
         # ### ZMQ ###
         # create zmq client
         self.zmq_commander_client = Commander("virtual_commander")
-        self.zmq_commander_ip = "tcp://145.24.238.104:5555"
+        self.zmq_commander_ip = "tcp://145.24.238.26:5555"
         
         self.zmq_tracker_client = Tracking("virtual_tracking")
-        self.zmq_tracker_ip = "tcp://145.24.238.104:5556"
+        self.zmq_tracker_ip = "tcp://145.24.238.26:5556"
         
         # create sockets
         self.zmq_context = zmq.Context()
@@ -233,9 +233,14 @@ class ZmqBridge(Node):
 
     def apriltag_callback(self, msg):
                 
+        if time.time() - self.apriltag_timer < self.apriltag_timer_treshold:
+            return
+
+        self.apriltag_timer = time.time()
+
         for detection in msg.detections:
             markerId = detection.id
-            
+
             if self.real_drones.get(markerId) != None:
                 # no need to send this to the server
                 continue
@@ -259,14 +264,9 @@ class ZmqBridge(Node):
                 0.0,
             )
 
-            # if time.time() - self.apriltag_timer < self.apriltag_timer_treshold:
-            #     continue
-            
-            # self.apriltag_timer = time.time()
-            
             DealerSend(self.zmq_tracker_socket, self.zmq_tracker_client, Drone(str(markerId)), action_details)
-        
-    
+
+
     def process_tracker_message(self, message):
         self.get_logger().info('Received message: "%s"' % message.action_details.ACTION_NAME)
         pass
@@ -291,13 +291,13 @@ class ZmqBridge(Node):
             # move_simulated_drone_msg.pose.orientation.w = float(message.action_details.drones_rotation_z)
             
             # send to the supervisor
-            
+
             if message.action_details.drone_name == self.GOAL_TAG: 
                 move_simulated_drone_msg.pose.position.z = 0.001
                 self.set_goal_tag_supervisor_publisher.publish(move_simulated_drone_msg)
             else:
                 self.move_drone_supervisor_publisher.publish(move_simulated_drone_msg)
-            
+
         if message.action_details.ACTION_NAME == ACTION_NAMES.action_move_drone:
 
             move_drone_msg = MoveDrone() # ROS2 message, the position is a pixel position, only have to listen to the x and y position
@@ -314,7 +314,7 @@ class ZmqBridge(Node):
             # only send msg if the drone is simulated
             self.get_logger().info('Publishing: id:' + str(move_drone_msg.marker) + ' ' + str(move_drone_msg.pose.position.x) + " " + str(move_drone_msg.pose.position.y) + " " + str(move_drone_msg.pose.orientation.z))
             # self.move_drone_publisher.publish(move_drone_msg)
-            
+
             # make move command
             twist = Twist()
             twist.linear.x = float(0.0 if message.action_details.target_pos_x == None else message.action_details.target_pos_x)
