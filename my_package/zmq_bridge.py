@@ -312,7 +312,6 @@ class ZmqBridge(Node):
             move_drone_msg.pose.orientation.z = float(0.0 if message.action_details.target_rotation == None else message.action_details.target_rotation)
 
             # only send msg if the drone is simulated
-            self.get_logger().info('Publishing: id:' + str(move_drone_msg.marker) + ' ' + str(move_drone_msg.pose.position.x) + " " + str(move_drone_msg.pose.position.y) + " " + str(move_drone_msg.pose.orientation.z))
             # self.move_drone_publisher.publish(move_drone_msg)
 
             # make move command
@@ -324,6 +323,7 @@ class ZmqBridge(Node):
             maxspeed = 0.05
             twist.linear.x = maxspeed if twist.linear.x > maxspeed else twist.linear.x
             twist.linear.y = maxspeed if twist.linear.y > maxspeed else twist.linear.y
+            self.get_logger().info('Publishing: id:' + str(move_drone_msg.marker) + ' ' + str(twist.linear.x) + ' ' + str(twist.linear.y))
             
             # the following is for move_linear
             if self.simulated_drones_publisher.get(move_drone_msg.marker) is None:

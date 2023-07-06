@@ -407,9 +407,7 @@ def checkCollision(a, b, c, x, y, radius):
     # from center.
     dist = ((abs(a * x + b * y + c)) /
             math.sqrt(a * a + b * b))
-    
-    
- 
+
     # Checking if the distance is less
     # than, greater than or equal to radius.
     if (radius >= dist):
@@ -521,14 +519,14 @@ class StraightlineFormationSwarmExecutor(SwarmExecutor):
             [self.swarm.camera_pixels[0]/2, self.swarm.camera_pixels[1] / len(self.swarm.drones + 2) * (i + 1) ] for i in range(len(self.swarm.drones))
         ]
         self.swarm.logger("StraightlineSwarmExecutor targets: " + str(self.targets))
-        
+
         self.precision = 5 # how close to the target is close enough
-        
+
         # Allocate targets to drones
         # Could be more efficient, (for example by pathing the closest drone to the closest target) but this is fine for now
         for i, drone in enumerate(self.swarm.drones):
             drone.target = (self.targets[i][0],self.targets[i][1],1)
-        
+
     def execute(self):
         # make a flight path for each drone
         # hover points will be like an obstacle

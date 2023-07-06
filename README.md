@@ -86,3 +86,9 @@ For better quality video, but slower time:
 ```
 ffmpeg -f dshow -i video="Sony Camera (Imaging Edge)" -pix_fmt yuv420p -c:v libx264 -preset ultrafast -b:v 600k -framerate 30 -video_size 1024x576 -f rtsp -rtsp_transport udp rtsp://172.26.160.1:8554/webcam.h264
 ```
+
+# SCRIPTS
+
+spawn fiducial 6 at pos 0.1 0.1
+
+ros2 topic pub -r 1 /supervisor/set_goal_tag swarm_interfaces/msg/MoveDrone "{ marker: 6,  pose: }"
